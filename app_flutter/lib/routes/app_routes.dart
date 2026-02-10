@@ -4,7 +4,7 @@ import '../screens/home_screen.dart';
 import '../screens/register_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/splash_screen.dart';
-import '../screens/admin_screen.dart';
+import '../screens/admin/admin_screen.dart';
 import '../screens/report_missing_screen.dart';
 import '../screens/report_found_screen.dart';
 

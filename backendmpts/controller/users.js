@@ -91,6 +91,101 @@ export const getAllUsers = async (req, res) => {
     }
 };
 
+export const updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role, fullName } = req.body;
+
+        if (!id) {
+            return res.status(400).json({ error: "Missing user id" });
+        }
+
+        const updates = {};
+        const clerkUpdates = {};
+
+        if (typeof role === "string" && role.trim().length > 0) {
+            updates.role = role.trim().toLowerCase();
+
+            let existingMetadata = {};
+            try {
+                const clerkUser = await clerk.users.getUser(id);
+                existingMetadata = clerkUser?.publicMetadata || {};
+            } catch (err) {
+                console.error("Failed to read Clerk user metadata:", err);
+            }
+
+            clerkUpdates.publicMetadata = {
+                ...existingMetadata,
+                role: updates.role,
+            };
+        }
+
+        if (typeof fullName === "string" && fullName.trim().length > 0) {
+            const cleanedName = fullName.trim();
+            updates.fullName = cleanedName;
+            const [firstName, ...rest] = cleanedName.split(" ");
+            const lastName = rest.join(" ");
+            updates.firstName = firstName || cleanedName;
+            updates.lastName = lastName;
+            clerkUpdates.firstName = firstName || cleanedName;
+            clerkUpdates.lastName = lastName;
+        }
+
+        if (Object.keys(updates).length === 0 && Object.keys(clerkUpdates).length === 0) {
+            return res.status(400).json({ error: "No updates provided" });
+        }
+
+        if (Object.keys(clerkUpdates).length > 0) {
+            await clerk.users.updateUser(id, clerkUpdates);
+        }
+
+        if (Object.keys(updates).length > 0) {
+            updates.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+            await usersRef.doc(id).set(updates, { merge: true });
+        }
+
+        const updatedSnap = await usersRef.doc(id).get();
+        const data = updatedSnap.exists ? updatedSnap.data() : updates;
+
+        return res.status(200).json({
+            success: true,
+            data: { id, ...data },
+        });
+    } catch (err) {
+        console.error("Error updating user:", err);
+        return res.status(500).json({ error: "Failed to update user" });
+    }
+};
+
+export const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ error: "Missing user id" });
+        }
+
+        try {
+            await clerk.users.deleteUser(id);
+        } catch (err) {
+            console.error("Failed to delete Clerk user:", err);
+        }
+
+        try {
+            await usersRef.doc(id).delete();
+        } catch (err) {
+            console.error("Failed to delete Firestore user:", err);
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "User deleted",
+        });
+    } catch (err) {
+        console.error("Error deleting user:", err);
+        return res.status(500).json({ error: "Failed to delete user" });
+    }
+};
+
 
 export const createNewUser = async (req, res) => {
     try {

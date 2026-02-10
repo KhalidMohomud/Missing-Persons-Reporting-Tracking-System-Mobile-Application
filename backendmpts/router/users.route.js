@@ -1,11 +1,22 @@
 
 import express from "express";
-import { createNewUser, forgotPassword, getAllUsers, resetPassword, signInUser, socialLogin } from "../controller/users.js";
+import {
+    createNewUser,
+    forgotPassword,
+    getAllUsers,
+    resetPassword,
+    signInUser,
+    socialLogin,
+    updateUser,
+    deleteUser,
+} from "../controller/users.js";
 import { requireAuth } from "@clerk/express";
 
 
 const router = express.Router();
 router.get("/user", getAllUsers);
+router.patch("/user/:id", updateUser);
+router.delete("/user/:id", deleteUser);
 
 
 router.get("/social-login", requireAuth(), socialLogin);
