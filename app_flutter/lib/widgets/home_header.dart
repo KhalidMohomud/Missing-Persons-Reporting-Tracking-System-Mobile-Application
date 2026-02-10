@@ -10,27 +10,36 @@ class HomeHeader extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
-          /// Profile Picture
-          CircleAvatar(
-            radius: 25,
-            backgroundColor: Colors.grey.shade300,
-            child: const Icon(Icons.person, size: 30),
-          ),
-          const SizedBox(width: 12),
+          /// Profile Picture + Name
           Expanded(
             child: ValueListenableBuilder<UserInfo?>(
               valueListenable: UserSession.current,
               builder: (context, user, _) {
                 final name = user?.name ?? 'Guest';
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                final photoUrl = user?.photoUrl ?? '';
+                final hasPhoto =
+                    photoUrl.isNotEmpty && photoUrl.startsWith('http');
+
+                return Row(
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
+                    CircleAvatar(
+                      radius: 25,
+                      backgroundColor: Colors.grey.shade300,
+                      backgroundImage: hasPhoto ? NetworkImage(photoUrl) : null,
+                      child: hasPhoto
+                          ? null
+                          : const Icon(Icons.person, size: 30),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        name,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                   ],

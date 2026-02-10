@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../routes/app_routes.dart';
+import '../session/user_session.dart';
+import 'login_required_dialog.dart';
 
 class SearchSection extends StatelessWidget {
   final Color primaryBlue;
@@ -17,6 +19,13 @@ class SearchSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Future<void> requireLogin() async {
+      final shouldLogin = await showLoginRequiredDialog(context);
+      if (shouldLogin && context.mounted) {
+        Navigator.of(context).pushNamed(AppRoutes.login);
+      }
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -54,9 +63,13 @@ class SearchSection extends StatelessWidget {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () async {
-                  final result = await Navigator.of(
-                    context,
-                  ).pushNamed(AppRoutes.reportMissing);
+                  if (!UserSession.isLoggedIn) {
+                    await requireLogin();
+                    return;
+                  }
+                  final result = await Navigator.of(context).pushNamed(
+                    AppRoutes.reportMissing,
+                  );
                   if (result == true) {
                     onReportSubmitted?.call();
                   }
@@ -79,9 +92,13 @@ class SearchSection extends StatelessWidget {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: () async {
-                  final result = await Navigator.of(
-                    context,
-                  ).pushNamed(AppRoutes.reportFound);
+                  if (!UserSession.isLoggedIn) {
+                    await requireLogin();
+                    return;
+                  }
+                  final result = await Navigator.of(context).pushNamed(
+                    AppRoutes.reportFound,
+                  );
                   if (result == true) {
                     onReportSubmitted?.call();
                   }

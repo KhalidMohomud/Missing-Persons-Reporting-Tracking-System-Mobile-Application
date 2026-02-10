@@ -240,7 +240,9 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import '../api/api.dart';
+import '../routes/app_routes.dart';
 import '../session/user_session.dart';
+import '../widgets/login_required_dialog.dart';
 
 class ReportFoundScreen extends StatefulWidget {
   const ReportFoundScreen({super.key});
@@ -308,6 +310,13 @@ class _ReportFoundScreenState extends State<ReportFoundScreen> {
   }
 
   Future<void> _submitFoundReport() async {
+    if (!UserSession.isLoggedIn) {
+      final shouldLogin = await showLoginRequiredDialog(context);
+      if (shouldLogin && mounted) {
+        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+      }
+      return;
+    }
     if (_isSubmitting) return;
 
     final ageText = _ageController.text.trim();

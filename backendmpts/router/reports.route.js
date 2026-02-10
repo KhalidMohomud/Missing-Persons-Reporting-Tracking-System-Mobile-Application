@@ -15,6 +15,7 @@ import {
     deleteFoundReport,
 } from "../controller/report_found.js";
 import { getMonthlyReports } from "../controller/admin_reports.js";
+import { createTip } from "../controller/tips.js";
 
 const router = express.Router();
 
@@ -24,6 +25,8 @@ router.post("/foundreports", createFoundReport);
 
 
 router.get("/reports/monthly", getMonthlyReports);
+
+router.post("/tips", createTip);
 
 
 router.get("/missingreports", getMissingReports);

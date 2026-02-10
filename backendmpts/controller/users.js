@@ -4,7 +4,7 @@ import { db, admin } from "../firebase/admin.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
-
+import { v2 as cloudinary } from "cloudinary";
 
 import dotenv from "dotenv";
 
@@ -33,6 +33,8 @@ const smtpTransporter = nodemailer.createTransport({
 });
 
 const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
+const isDataUrl = (value) => /^data:image\/[a-zA-Z]+;base64,/.test(value || "");
+const isHttpUrl = (value) => /^https?:\/\//i.test(value || "");
 
 const resolveUserEmail = (user, fallbackEmail) => {
     const normalized = normalizeEmail(fallbackEmail);
@@ -91,10 +93,37 @@ export const getAllUsers = async (req, res) => {
     }
 };
 
+export const getUserById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ error: "Missing user id" });
+        }
+
+        const doc = await usersRef.doc(id).get();
+        if (!doc.exists) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const data = doc.data();
+        return res.status(200).json({
+            success: true,
+            data: {
+                id: doc.id,
+                ...data,
+                createdAt: data?.createdAt?.toDate ? data.createdAt.toDate() : data?.createdAt,
+            },
+        });
+    } catch (err) {
+        console.error("Error fetching user:", err);
+        return res.status(500).json({ error: "Failed to fetch user" });
+    }
+};
+
 export const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { role, fullName } = req.body;
+        const { role, fullName, phone, photo } = req.body;
 
         if (!id) {
             return res.status(400).json({ error: "Missing user id" });
@@ -129,6 +158,24 @@ export const updateUser = async (req, res) => {
             updates.lastName = lastName;
             clerkUpdates.firstName = firstName || cleanedName;
             clerkUpdates.lastName = lastName;
+        }
+
+        if (typeof phone === "string" && phone.trim().length > 0) {
+            updates.phone = phone.trim();
+        }
+
+        if (photo && (isDataUrl(photo) || isHttpUrl(photo))) {
+            try {
+                const uploadRes = await cloudinary.uploader.upload(photo, {
+                    folder: "user_profiles",
+                    resource_type: "image",
+                    secure: true,
+                });
+                updates.photoUrl = uploadRes.secure_url;
+            } catch (err) {
+                console.error("Cloudinary upload error:", err);
+                return res.status(400).json({ error: "Failed to upload photo" });
+            }
         }
 
         if (Object.keys(updates).length === 0 && Object.keys(clerkUpdates).length === 0) {

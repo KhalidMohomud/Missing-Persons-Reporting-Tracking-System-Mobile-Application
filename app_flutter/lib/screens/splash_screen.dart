@@ -105,7 +105,7 @@ class SplashScreen extends StatelessWidget {
                       Navigator.of(context).pop();
                       Navigator.of(
                         context,
-                      ).pushReplacementNamed(AppRoutes.login);
+                      ).pushReplacementNamed(AppRoutes.home);
                     },
                     child: const Text(
                       'Get Started',

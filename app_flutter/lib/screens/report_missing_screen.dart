@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import '../api/api.dart';
 import '../session/user_session.dart';
+import '../routes/app_routes.dart';
+import '../widgets/login_required_dialog.dart';
 
 class ReportMissingScreen extends StatefulWidget {
   const ReportMissingScreen({super.key});
@@ -136,6 +138,13 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
   }
 
   Future<void> _submitReport() async {
+    if (!UserSession.isLoggedIn) {
+      final shouldLogin = await showLoginRequiredDialog(context);
+      if (shouldLogin && mounted) {
+        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+      }
+      return;
+    }
     if (_isSubmitting) return;
 
     final fullName = _fullNameController.text.trim();

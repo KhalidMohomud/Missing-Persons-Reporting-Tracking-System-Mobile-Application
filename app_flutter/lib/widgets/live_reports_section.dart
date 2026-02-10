@@ -140,7 +140,7 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header + filter buttons
+        // Header + filter buttons (fixed)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -165,66 +165,91 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
-        if (_isLoading)
-          const Center(child: CircularProgressIndicator())
-        else if (_error != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(_error!, style: const TextStyle(color: Colors.red)),
-          )
-        else if (list.isEmpty)
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
-            child: Text('No reports yet.'),
-          )
-        else
-          Column(
-            children: list.map((report) {
-              final name =
-                  (report['fullName'] ?? report['description'] ?? 'Unknown')
-                      .toString();
-              final age = ReportDetailsUtils.formatAge(
-                report['age'] ?? report['estimatedAge'],
-              );
-              final gender = (report['gender'] ?? 'Unknown').toString();
-              final location =
-                  (report['lastSeenLocation'] ?? report['locationFound'] ?? '')
-                      .toString();
-              final date = ReportDetailsUtils.formatDate(
-                report['lastSeenDate'] ?? report['createdAt'],
-              );
-              final imagePath = (report['photo'] ?? '')
-                  .toString(); // Cloudinary URL
+        // Scrollable list only
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _fetchReports,
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: _buildItemCount(list),
+              itemBuilder: (context, index) {
+                if (_isLoading) {
+                  return const Padding(
+                    padding: EdgeInsets.only(top: 24),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
 
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12.0),
-                child: ReportCard(
-                  name: name,
-                  age: age,
-                  gender: gender,
-                  location: location,
-                  date: date,
-                  imagePath: imagePath.isEmpty
-                      ? 'assets/aamina.png'
-                      : imagePath,
-                  onTap: () {
-                    final details = ReportDetailsScreen.fromReport(
-                      report: report,
-                      isMissing: selectedFilter != 'FOUND',
-                    );
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ReportDetailsScreen(data: details),
-                      ),
-                    );
-                  },
-                ),
-              );
-            }).toList(),
+                if (_error != null) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
+
+                if (list.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: Text('No reports yet.'),
+                  );
+                }
+
+                final report = list[index];
+                final name =
+                    (report['fullName'] ?? report['description'] ?? 'Unknown')
+                        .toString();
+                final age = ReportDetailsUtils.formatAge(
+                  report['age'] ?? report['estimatedAge'],
+                );
+                final gender = (report['gender'] ?? 'Unknown').toString();
+                final location =
+                    (report['lastSeenLocation'] ?? report['locationFound'] ?? '')
+                        .toString();
+                final date = ReportDetailsUtils.formatDate(
+                  report['lastSeenDate'] ?? report['createdAt'],
+                );
+                final imagePath =
+                    (report['photo'] ?? '').toString(); // Cloudinary URL
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: ReportCard(
+                    name: name,
+                    age: age,
+                    gender: gender,
+                    location: location,
+                    date: date,
+                    imagePath: imagePath.isEmpty
+                        ? 'assets/aamina.png'
+                        : imagePath,
+                    onTap: () {
+                      final details = ReportDetailsScreen.fromReport(
+                        report: report,
+                        isMissing: selectedFilter != 'FOUND',
+                      );
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ReportDetailsScreen(data: details),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
           ),
+        ),
       ],
     );
+  }
+
+  int _buildItemCount(List<Map<String, dynamic>> list) {
+    if (_isLoading || _error != null || list.isEmpty) return 1;
+    return list.length;
   }
 }

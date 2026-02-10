@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 
 class UserInfo {
+  final String? id;
   final String name;
   final String email;
   final String? token;
   final String role;
+  final String? photoUrl;
+  final String? phone;
 
   const UserInfo({
+    this.id,
     required this.name,
     required this.email,
     this.token,
     this.role = 'public',
+    this.photoUrl,
+    this.phone,
   });
 }
 
@@ -18,6 +24,13 @@ class UserSession {
   static final ValueNotifier<UserInfo?> current = ValueNotifier<UserInfo?>(
     null,
   );
+
+  static bool get isLoggedIn {
+    final user = current.value;
+    if (user == null) return false;
+    if (user.email.trim().isEmpty) return false;
+    return user.email.trim().toLowerCase() != 'guest@example.com';
+  }
 
   static void setUser(UserInfo user) {
     current.value = user;
@@ -40,6 +53,13 @@ class UserSession {
     final name =
         _firstString(userMap, ['fullName', 'name', 'username']) ??
         _nameFromEmail(email);
+    final id =
+        _firstString(userMap, ['userId', 'id', 'uid']) ??
+        _firstString(data is Map<String, dynamic> ? data : null, [
+          'userId',
+          'id',
+          'uid',
+        ]);
     final role = (data is Map<String, dynamic> && data['role'] is String)
         ? (data['role'] as String).trim()
         : _firstString(userMap, ['role']) ?? 'public';
@@ -47,14 +67,39 @@ class UserSession {
         tokenOverride ??
         _extractToken(data) ??
         _firstString(userMap, ['token', 'accessToken', 'access_token', 'jwt']);
+    final photoUrl =
+        _firstString(userMap, ['photoUrl', 'photo', 'avatar', 'image']);
+    final phone = _firstString(userMap, ['phone', 'phoneNumber']);
 
     setUser(
       UserInfo(
+        id: id,
         name: name.isEmpty ? 'User' : name,
         email: email.isEmpty ? fallbackEmail : email,
         token: token,
         role: role.isEmpty ? 'public' : role,
+        photoUrl: photoUrl,
+        phone: phone,
       ),
+    );
+  }
+
+  static void updateProfile({
+    String? name,
+    String? email,
+    String? photoUrl,
+    String? phone,
+  }) {
+    final currentUser = current.value;
+    if (currentUser == null) return;
+    current.value = UserInfo(
+      id: currentUser.id,
+      name: name ?? currentUser.name,
+      email: email ?? currentUser.email,
+      token: currentUser.token,
+      role: currentUser.role,
+      photoUrl: photoUrl ?? currentUser.photoUrl,
+      phone: phone ?? currentUser.phone,
     );
   }
 

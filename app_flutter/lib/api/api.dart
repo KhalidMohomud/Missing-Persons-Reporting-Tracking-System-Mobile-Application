@@ -8,3 +8,4 @@ const String MISSING_REPORTS_URL = "$URL_BASE/missingreports";
 const String FOUND_REPORTS_URL = "$URL_BASE/foundreports";
 const String MONTHLY_REPORTS_URL = "$URL_BASE/reports/monthly";
 const String USERS_URL = "$URL_BASE/user";
+const String TIPS_URL = "$URL_BASE/tips";

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../routes/app_routes.dart';
+import '../session/user_session.dart';
 import '../widgets/home_header.dart';
 import '../widgets/search_section.dart';
 import '../widgets/live_reports_section.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/login_required_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,42 +31,44 @@ class _HomeScreenState extends State<HomeScreen> {
             /// Top Header
             const HomeHeader(),
 
-            /// Main Content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    /// Search Section
-                    SearchSection(
-                      primaryBlue: primaryBlue,
-                      goldColor: goldColor,
-                      onReportSubmitted: () {
-                        setState(() {
-                          _refreshSignal++;
-                        });
-                      },
-                      onSearchChanged: (value) {
-                        setState(() {
-                          _searchQuery = value.trim();
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 32),
+            /// Fixed Search Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SearchSection(
+                    primaryBlue: primaryBlue,
+                    goldColor: goldColor,
+                    onReportSubmitted: () {
+                      setState(() {
+                        _refreshSignal++;
+                      });
+                    },
+                    onSearchChanged: (value) {
+                      setState(() {
+                        _searchQuery = value.trim();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
 
-                    /// Live Reports Section
-                    LiveReportsSection(
-                      selectedFilter: _selectedFilter,
-                      searchQuery: _searchQuery,
-                      refreshSignal: _refreshSignal,
-                      onFilterChanged: (filter) {
-                        setState(() {
-                          _selectedFilter = filter;
-                        });
-                      },
-                    ),
-                  ],
+            /// Live Reports Section (scrollable list only)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: LiveReportsSection(
+                  selectedFilter: _selectedFilter,
+                  searchQuery: _searchQuery,
+                  refreshSignal: _refreshSignal,
+                  onFilterChanged: (filter) {
+                    setState(() {
+                      _selectedFilter = filter;
+                    });
+                  },
                 ),
               ),
             ),
@@ -72,6 +76,14 @@ class _HomeScreenState extends State<HomeScreen> {
             /// Bottom Navigation Bar
             BottomNavBar(
               onProfileTap: () {
+                if (!UserSession.isLoggedIn) {
+                  showLoginRequiredDialog(context).then((shouldLogin) {
+                    if (shouldLogin && context.mounted) {
+                      Navigator.of(context).pushNamed(AppRoutes.login);
+                    }
+                  });
+                  return;
+                }
                 Navigator.of(context).pushNamed(AppRoutes.profile);
               },
               onAdminTap: () {

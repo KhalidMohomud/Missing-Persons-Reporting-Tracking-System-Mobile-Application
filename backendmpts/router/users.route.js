@@ -4,6 +4,7 @@ import {
     createNewUser,
     forgotPassword,
     getAllUsers,
+    getUserById,
     resetPassword,
     signInUser,
     socialLogin,
@@ -15,6 +16,7 @@ import { requireAuth } from "@clerk/express";
 
 const router = express.Router();
 router.get("/user", getAllUsers);
+router.get("/user/:id", getUserById);
 router.patch("/user/:id", updateUser);
 router.delete("/user/:id", deleteUser);
 

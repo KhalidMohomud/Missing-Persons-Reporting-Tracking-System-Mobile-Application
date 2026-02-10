@@ -5,6 +5,7 @@ import 'report_details_utils.dart';
 import 'widgets/report_details_actions.dart';
 import 'widgets/report_details_header.dart';
 import 'widgets/report_details_section.dart';
+import '../report_tip_screen.dart';
 
 class ReportDetailsScreen extends StatelessWidget {
   final ReportDetailsData data;
@@ -15,6 +16,7 @@ class ReportDetailsScreen extends StatelessWidget {
     required Map<String, dynamic> report,
     required bool isMissing,
   }) {
+    final reportId = ReportDetailsUtils.safeString(report['id']);
     final name = ReportDetailsUtils.safeString(report['fullName']);
     final age = isMissing
         ? ReportDetailsUtils.formatAge(report['age'])
@@ -40,6 +42,7 @@ class ReportDetailsScreen extends StatelessWidget {
 
     return ReportDetailsData(
       isMissing: isMissing,
+      reportId: reportId,
       title: displayName,
       subtitle: subtitle,
       statusLabel: isMissing ? 'MISSING' : 'FOUND',
@@ -65,7 +68,20 @@ class ReportDetailsScreen extends StatelessWidget {
               const SizedBox(height: 56),
               ReportDetailsSection(data: data),
               const SizedBox(height: 24),
-              ReportDetailsActions(data: data),
+              ReportDetailsActions(
+                data: data,
+                onTipPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ReportTipScreen(
+                        reportId: data.reportId,
+                        targetName: data.title,
+                        imageUrl: data.imageUrl,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),

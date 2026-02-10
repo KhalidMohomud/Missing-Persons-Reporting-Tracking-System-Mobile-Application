@@ -5,8 +5,13 @@ import '../report_details_theme.dart';
 
 class ReportDetailsActions extends StatelessWidget {
   final ReportDetailsData data;
+  final VoidCallback onTipPressed;
 
-  const ReportDetailsActions({super.key, required this.data});
+  const ReportDetailsActions({
+    super.key,
+    required this.data,
+    required this.onTipPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +24,7 @@ class ReportDetailsActions extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => _showTipMessage(context),
+              onPressed: onTipPressed,
               icon: const Icon(Icons.check_circle_outline, color: Colors.white),
               label: Text(
                 data.isMissing ? 'Send Anonymous Tip' : 'Share Helpful Info',
@@ -65,12 +70,6 @@ class ReportDetailsActions extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  void _showTipMessage(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Thank you. Tip feature coming soon.')),
     );
   }
 
