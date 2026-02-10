@@ -29,7 +29,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             /// Top Header
-            const HomeHeader(),
+            HomeHeader(
+              onNotificationsTap: () {
+                Navigator.of(context).pushNamed(AppRoutes.alertsCenter);
+              },
+            ),
 
             /// Fixed Search Section
             Padding(
@@ -88,6 +92,17 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               onAdminTap: () {
                 Navigator.of(context).pushNamed(AppRoutes.admin);
+              },
+              onAlertTap: () {
+                if (!UserSession.isLoggedIn) {
+                  showLoginRequiredDialog(context).then((shouldLogin) {
+                    if (shouldLogin && context.mounted) {
+                      Navigator.of(context).pushNamed(AppRoutes.login);
+                    }
+                  });
+                  return;
+                }
+                Navigator.of(context).pushNamed(AppRoutes.alertsCenter);
               },
             ),
           ],

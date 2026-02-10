@@ -9,6 +9,7 @@ class AdminDashboardView extends StatelessWidget {
   final String? error;
   final VoidCallback onViewAllMissing;
   final VoidCallback onViewAllFound;
+  final VoidCallback onSendAlert;
   final String Function(Map<String, dynamic>) reporterNameFor;
 
   const AdminDashboardView({
@@ -17,6 +18,7 @@ class AdminDashboardView extends StatelessWidget {
     required this.error,
     required this.onViewAllMissing,
     required this.onViewAllFound,
+    required this.onSendAlert,
     required this.reporterNameFor,
   });
 
@@ -57,6 +59,8 @@ class AdminDashboardView extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        _QuickActionCard(onSendAlert: onSendAlert),
         const SizedBox(height: 18),
         _MonthlySection(
           title: 'Missing Reports (Last Month)',
@@ -226,6 +230,85 @@ class _SummaryCard extends StatelessWidget {
           Text(
             title,
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickActionCard extends StatelessWidget {
+  final VoidCallback onSendAlert;
+
+  const _QuickActionCard({required this.onSendAlert});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AdminTheme.primaryBlue,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: AdminTheme.primaryBlue.withOpacity(0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.notifications_active_outlined,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Send Public Alert',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Notify the public with a pinned location and message.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.white.withOpacity(0.85),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          ElevatedButton(
+            onPressed: onSendAlert,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AdminTheme.primaryBlue,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: const Text(
+              'Create',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),

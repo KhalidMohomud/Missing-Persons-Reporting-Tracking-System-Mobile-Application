@@ -60,6 +60,15 @@ class AdminNavBar extends StatelessWidget {
           ),
           Expanded(
             child: _NavItem(
+              tab: AdminTab.tips,
+              label: 'Tips',
+              icon: Icons.tips_and_updates_outlined,
+              isActive: activeTab == AdminTab.tips,
+              onTap: onTabChanged,
+            ),
+          ),
+          Expanded(
+            child: _NavItem(
               tab: AdminTab.users,
               label: 'Users',
               icon: Icons.manage_accounts_outlined,

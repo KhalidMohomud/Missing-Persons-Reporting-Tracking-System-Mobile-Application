@@ -1,5 +1,4 @@
 import express from "express";
-// import { requireAuth } from "@clerk/express";
 import {
     createMissingReport,
     getMissingReports,
@@ -15,7 +14,8 @@ import {
     deleteFoundReport,
 } from "../controller/report_found.js";
 import { getMonthlyReports } from "../controller/admin_reports.js";
-import { createTip } from "../controller/tips.js";
+import { createTip, getTips } from "../controller/tips.js";
+import { createAlert, getAlerts } from "../controller/alerts.js";
 
 const router = express.Router();
 
@@ -27,6 +27,9 @@ router.post("/foundreports", createFoundReport);
 router.get("/reports/monthly", getMonthlyReports);
 
 router.post("/tips", createTip);
+router.get("/tips", getTips);
+router.post("/alerts", createAlert);
+router.get("/alerts", getAlerts);
 
 
 router.get("/missingreports", getMissingReports);

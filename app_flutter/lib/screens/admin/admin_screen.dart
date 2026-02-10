@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../../api/api.dart';
+import '../../routes/app_routes.dart';
 import '../../session/user_session.dart';
 import 'admin_models.dart';
 import 'admin_theme.dart';
@@ -11,6 +12,7 @@ import 'admin_utils.dart';
 import 'widgets/admin_dashboard_view.dart';
 import 'widgets/admin_nav_bar.dart';
 import 'widgets/admin_reports_view.dart';
+import 'widgets/admin_tips_view.dart';
 import 'widgets/admin_user_management_view.dart';
 
 class AdminScreen extends StatefulWidget {
@@ -28,6 +30,7 @@ class _AdminScreenState extends State<AdminScreen> {
   List<Map<String, dynamic>> _missingReports = [];
   List<Map<String, dynamic>> _foundReports = [];
   List<Map<String, dynamic>> _users = [];
+  List<Map<String, dynamic>> _tips = [];
   Map<String, String> _userLookup = {};
   MonthlyData _monthly = MonthlyData.empty();
 
@@ -39,9 +42,22 @@ class _AdminScreenState extends State<AdminScreen> {
 
   Map<String, String> _buildHeaders() {
     final headers = <String, String>{'Content-Type': 'application/json'};
-    final token = UserSession.current.value?.token;
+    final user = UserSession.current.value;
+    final token = user?.token;
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
+    }
+    final userId = user?.id;
+    if (userId != null && userId.isNotEmpty) {
+      headers['X-User-Id'] = userId;
+    }
+    final email = user?.email ?? '';
+    if (email.isNotEmpty) {
+      headers['X-User-Email'] = email;
+    }
+    final role = user?.role ?? '';
+    if (role.isNotEmpty) {
+      headers['X-User-Role'] = role;
     }
     return headers;
   }
@@ -90,6 +106,21 @@ class _AdminScreenState extends State<AdminScreen> {
     throw Exception('Failed to load users (${response.statusCode})');
   }
 
+  Future<List<Map<String, dynamic>>> _getTips() async {
+    final response = await http
+        .get(Uri.parse(TIPS_URL), headers: _buildHeaders())
+        .timeout(const Duration(seconds: 12));
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      return _parseList(decoded);
+    }
+    if (response.statusCode == 404) {
+      return [];
+    }
+    throw Exception('Failed to load tips (${response.statusCode})');
+  }
+
   Future<MonthlyData> _getMonthlyReports() async {
     final response = await http
         .get(Uri.parse(MONTHLY_REPORTS_URL), headers: _buildHeaders())
@@ -135,6 +166,7 @@ class _AdminScreenState extends State<AdminScreen> {
     var found = _foundReports;
     var monthly = _monthly;
     var users = _users;
+    var tips = _tips;
 
     try {
       missing = await _getReports(MISSING_REPORTS_URL);
@@ -160,12 +192,19 @@ class _AdminScreenState extends State<AdminScreen> {
       error = _appendError(error, 'Users: $e');
     }
 
+    try {
+      tips = await _getTips();
+    } catch (e) {
+      error = _appendError(error, 'Tips: $e');
+    }
+
     if (!mounted) return;
     setState(() {
       _missingReports = missing;
       _foundReports = found;
       _monthly = monthly;
       _users = users;
+      _tips = tips;
       _userLookup = _buildUserLookup(users);
       _error = error;
       _isLoading = false;
@@ -218,6 +257,21 @@ class _AdminScreenState extends State<AdminScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to refresh users: $e')),
+      );
+    }
+  }
+
+  Future<void> _refreshTips() async {
+    try {
+      final tips = await _getTips();
+      if (!mounted) return;
+      setState(() {
+        _tips = tips;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to refresh tips: $e')),
       );
     }
   }
@@ -414,8 +468,27 @@ class _AdminScreenState extends State<AdminScreen> {
             onPressed: _fetchAll,
             tooltip: 'Refresh',
           ),
+          IconButton(
+            icon: const Icon(Icons.notifications_active_outlined,
+                color: AdminTheme.primaryBlue),
+            onPressed: () {
+              Navigator.of(context).pushNamed(AppRoutes.addAlert);
+            },
+            tooltip: 'Create alert',
+          ),
           const SizedBox(width: 8),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.of(context).pushNamed(AppRoutes.addAlert);
+        },
+        backgroundColor: AdminTheme.primaryBlue,
+        icon: const Icon(Icons.campaign_outlined),
+        label: const Text(
+          'Create Alert',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
       ),
       body: Column(
         children: [
@@ -457,6 +530,9 @@ class _AdminScreenState extends State<AdminScreen> {
           error: _error,
           onViewAllMissing: () => setState(() => _tab = AdminTab.missing),
           onViewAllFound: () => setState(() => _tab = AdminTab.found),
+          onSendAlert: () {
+            Navigator.of(context).pushNamed(AppRoutes.addAlert);
+          },
           reporterNameFor: _reporterNameFor,
         );
       case AdminTab.missing:
@@ -476,6 +552,12 @@ class _AdminScreenState extends State<AdminScreen> {
           reporterNameFor: _reporterNameFor,
           onUpdateStatus: null,
           onDelete: _deleteFoundReport,
+        );
+      case AdminTab.tips:
+        return AdminTipsView(
+          tips: _tips,
+          error: _error,
+          onRefresh: _refreshTips,
         );
       case AdminTab.users:
         return AdminUserManagementView(

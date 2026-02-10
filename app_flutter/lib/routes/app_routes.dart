@@ -7,6 +7,9 @@ import '../screens/splash_screen.dart';
 import '../screens/admin/admin_screen.dart';
 import '../screens/report_missing_screen.dart';
 import '../screens/report_found_screen.dart';
+import '../screens/add_found_report_screen.dart';
+import '../screens/add_alert_screen.dart';
+import '../screens/alerts_notifications_screen.dart';
 
 class AppRoutes {
   static const String login = '/';
@@ -16,6 +19,8 @@ class AppRoutes {
   static const String splash = '/splash';
   static const String reportMissing = '/report-missing';
   static const String reportFound = '/report-found';
+  static const String addAlert = '/add-alert';
+  static const String alertsCenter = '/alerts-center';
   static const String admin = '/admin';
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -32,7 +37,13 @@ class AppRoutes {
       case reportMissing:
         return MaterialPageRoute(builder: (_) => const ReportMissingScreen());
       case reportFound:
-        return MaterialPageRoute(builder: (_) => const ReportFoundScreen());
+        return MaterialPageRoute(builder: (_) => const AddFoundReportScreen());
+      case addAlert:
+        return MaterialPageRoute(builder: (_) => const AddAlertScreen());
+      case alertsCenter:
+        return MaterialPageRoute(
+          builder: (_) => const AlertsNotificationsScreen(),
+        );
       case admin:
         return MaterialPageRoute(builder: (_) => const AdminScreen());
       default:

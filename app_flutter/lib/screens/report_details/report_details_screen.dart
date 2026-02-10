@@ -5,7 +5,8 @@ import 'report_details_utils.dart';
 import 'widgets/report_details_actions.dart';
 import 'widgets/report_details_header.dart';
 import 'widgets/report_details_section.dart';
-import '../report_tip_screen.dart';
+import 'widgets/report_tips_section.dart';
+import '../add_tip_screen.dart';
 
 class ReportDetailsScreen extends StatelessWidget {
   final ReportDetailsData data;
@@ -34,6 +35,7 @@ class ReportDetailsScreen extends StatelessWidget {
     final imageUrl = ReportDetailsUtils.safeString(report['photo']);
     final contactName = ReportDetailsUtils.safeString(report['contactName']);
     final contactPhone = ReportDetailsUtils.safeString(report['contactPhone']);
+    final reportOwnerId = ReportDetailsUtils.safeString(report['reportedBy']);
 
     final displayName = name.isNotEmpty
         ? name
@@ -52,6 +54,7 @@ class ReportDetailsScreen extends StatelessWidget {
       description: description,
       contactName: contactName,
       contactPhone: contactPhone,
+      reportOwnerId: reportOwnerId,
     );
   }
 
@@ -67,16 +70,23 @@ class ReportDetailsScreen extends StatelessWidget {
               ReportDetailsHeader(data: data),
               const SizedBox(height: 56),
               ReportDetailsSection(data: data),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
+              ReportTipsSection(
+                reportId: data.reportId,
+                isMissing: data.isMissing,
+                reportOwnerId: data.reportOwnerId,
+              ),
+              const SizedBox(height: 12),
               ReportDetailsActions(
                 data: data,
                 onTipPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => ReportTipScreen(
+                      builder: (_) => AddTipScreen(
                         reportId: data.reportId,
                         targetName: data.title,
                         imageUrl: data.imageUrl,
+                        isMissing: data.isMissing,
                       ),
                     ),
                   );

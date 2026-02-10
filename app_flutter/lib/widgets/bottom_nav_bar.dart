@@ -4,8 +4,14 @@ import '../session/user_session.dart';
 class BottomNavBar extends StatelessWidget {
   final VoidCallback? onProfileTap;
   final VoidCallback? onAdminTap;
+  final VoidCallback? onAlertTap;
 
-  const BottomNavBar({super.key, this.onProfileTap, this.onAdminTap});
+  const BottomNavBar({
+    super.key,
+    this.onProfileTap,
+    this.onAdminTap,
+    this.onAlertTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +52,7 @@ class BottomNavBar extends StatelessWidget {
                 icon: Icons.notifications,
                 label: 'Alert',
                 isActive: false,
-                onTap: () {},
+                onTap: onAlertTap ?? () {},
               ),
               _NavItem(
                 icon: Icons.person,

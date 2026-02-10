@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../session/user_session.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
+  final VoidCallback? onNotificationsTap;
+
+  const HomeHeader({super.key, this.onNotificationsTap});
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +53,7 @@ class HomeHeader extends StatelessWidget {
           /// Notification Bell
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
+            onPressed: onNotificationsTap ?? () {},
           ),
         ],
       ),

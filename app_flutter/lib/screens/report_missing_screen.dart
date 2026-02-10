@@ -195,6 +195,7 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
     final formattedPhone = _formatPhoneNumber(contactPhone);
 
     final reporterId =
+        UserSession.current.value?.id ??
         UserSession.current.value?.email ??
         UserSession.current.value?.name ??
         'anonymous';

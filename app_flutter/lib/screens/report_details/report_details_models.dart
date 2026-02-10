@@ -10,6 +10,7 @@ class ReportDetailsData {
   final String description;
   final String contactName;
   final String contactPhone;
+  final String reportOwnerId;
 
   const ReportDetailsData({
     required this.isMissing,
@@ -23,5 +24,6 @@ class ReportDetailsData {
     required this.description,
     required this.contactName,
     required this.contactPhone,
+    required this.reportOwnerId,
   });
 }

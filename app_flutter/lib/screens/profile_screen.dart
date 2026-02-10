@@ -184,7 +184,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon: Icons.notifications_outlined,
                     title: 'Notifications',
                     subtitle: 'Manage your notification settings',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).pushNamed(AppRoutes.alertsCenter);
+                    },
                   ),
                   // const SizedBox(height: 12),
                   // _ProfileMenuItem(
