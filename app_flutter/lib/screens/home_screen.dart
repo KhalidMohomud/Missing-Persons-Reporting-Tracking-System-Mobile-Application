@@ -1,0 +1,79 @@
+import 'package:flutter/material.dart';
+import '../routes/app_routes.dart';
+import '../widgets/home_header.dart';
+import '../widgets/search_section.dart';
+import '../widgets/live_reports_section.dart';
+import '../widgets/bottom_nav_bar.dart';
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final Color primaryBlue = const Color(0xFF2F89B8);
+  final Color goldColor = const Color(0xFFD4AF37);
+  String _selectedFilter = 'MISSING';
+  String _searchQuery = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            /// Top Header
+            const HomeHeader(),
+
+            /// Main Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// Search Section
+                    SearchSection(
+                      primaryBlue: primaryBlue,
+                      goldColor: goldColor,
+                      onSearchChanged: (value) {
+                        setState(() {
+                          _searchQuery = value.trim();
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 32),
+
+                    /// Live Reports Section
+                    LiveReportsSection(
+                      selectedFilter: _selectedFilter,
+                      searchQuery: _searchQuery,
+                      onFilterChanged: (filter) {
+                        setState(() {
+                          _selectedFilter = filter;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            /// Bottom Navigation Bar
+            BottomNavBar(
+              onProfileTap: () {
+                Navigator.of(context).pushNamed(AppRoutes.profile);
+              },
+              onAdminTap: () {
+                Navigator.of(context).pushNamed(AppRoutes.admin);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
