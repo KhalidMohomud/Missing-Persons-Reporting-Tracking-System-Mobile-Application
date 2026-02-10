@@ -6,3 +6,4 @@ const String socialLOGIN_URL = "$URL_BASE/user/socialsignin";
 
 const String MISSING_REPORTS_URL = "$URL_BASE/missingreports";
 const String FOUND_REPORTS_URL = "$URL_BASE/foundreports";
+const String MONTHLY_REPORTS_URL = "$URL_BASE/reports/monthly";
