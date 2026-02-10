@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 
 class ReportCard extends StatelessWidget {
   final String name;
-  final int age;
+  final String age;
   final String gender;
   final String location;
   final String date;
   final String imagePath;
+  final VoidCallback? onTap;
 
   const ReportCard({
     super.key,
@@ -16,6 +17,7 @@ class ReportCard extends StatelessWidget {
     required this.location,
     required this.date,
     required this.imagePath,
+    this.onTap,
   });
 
   Widget _fallbackAvatar() {
@@ -55,21 +57,23 @@ class ReportCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color primaryBlue = const Color(0xFF2F89B8);
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
         children: [
           /// Profile Image
           ClipRRect(
@@ -92,7 +96,7 @@ class ReportCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Age: $age • $gender',
+                  'Age: ${age.isEmpty ? 'N/A' : age} • $gender',
                   style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 8),
@@ -133,6 +137,7 @@ class ReportCard extends StatelessWidget {
           /// Arrow Icon
           Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
         ],
+      ),
       ),
     );
   }

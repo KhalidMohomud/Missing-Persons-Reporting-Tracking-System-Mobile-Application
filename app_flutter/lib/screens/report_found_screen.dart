@@ -402,7 +402,7 @@ class _ReportFoundScreenState extends State<ReportFoundScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Found report submitted successfully')),
         );
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Submission failed: ${response.statusCode}')),

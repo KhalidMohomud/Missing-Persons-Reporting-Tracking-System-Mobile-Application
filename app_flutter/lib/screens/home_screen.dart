@@ -17,6 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final Color goldColor = const Color(0xFFD4AF37);
   String _selectedFilter = 'MISSING';
   String _searchQuery = '';
+  int _refreshSignal = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +40,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     SearchSection(
                       primaryBlue: primaryBlue,
                       goldColor: goldColor,
+                      onReportSubmitted: () {
+                        setState(() {
+                          _refreshSignal++;
+                        });
+                      },
                       onSearchChanged: (value) {
                         setState(() {
                           _searchQuery = value.trim();
@@ -51,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     LiveReportsSection(
                       selectedFilter: _selectedFilter,
                       searchQuery: _searchQuery,
+                      refreshSignal: _refreshSignal,
                       onFilterChanged: (filter) {
                         setState(() {
                           _selectedFilter = filter;

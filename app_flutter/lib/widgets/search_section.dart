@@ -5,12 +5,14 @@ class SearchSection extends StatelessWidget {
   final Color primaryBlue;
   final Color goldColor;
   final ValueChanged<String>? onSearchChanged;
+  final VoidCallback? onReportSubmitted;
 
   const SearchSection({
     super.key,
     required this.primaryBlue,
     required this.goldColor,
     this.onSearchChanged,
+    this.onReportSubmitted,
   });
 
   @override
@@ -51,8 +53,13 @@ class SearchSection extends StatelessWidget {
           children: [
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pushNamed(AppRoutes.reportMissing);
+                onPressed: () async {
+                  final result = await Navigator.of(
+                    context,
+                  ).pushNamed(AppRoutes.reportMissing);
+                  if (result == true) {
+                    onReportSubmitted?.call();
+                  }
                 },
                 icon: const Icon(Icons.add_circle_outline, color: Colors.white),
                 label: const Text(
@@ -71,8 +78,13 @@ class SearchSection extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.of(context).pushNamed(AppRoutes.reportFound);
+                onPressed: () async {
+                  final result = await Navigator.of(
+                    context,
+                  ).pushNamed(AppRoutes.reportFound);
+                  if (result == true) {
+                    onReportSubmitted?.call();
+                  }
                 },
                 icon: const Icon(
                   Icons.check_circle_outline,

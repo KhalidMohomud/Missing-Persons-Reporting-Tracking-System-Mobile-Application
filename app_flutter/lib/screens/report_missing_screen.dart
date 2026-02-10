@@ -228,7 +228,7 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Report submitted successfully.')),
           );
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(true);
         }
       } else {
         if (mounted) {

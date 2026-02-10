@@ -1,87 +1,12 @@
-// import 'package:flutter/material.dart';
-// import 'filter_button.dart';
-// import 'report_card.dart';
-
-// class LiveReportsSection extends StatelessWidget {
-//   final String selectedFilter;
-//   final Function(String) onFilterChanged;
-
-//   const LiveReportsSection({
-//     super.key,
-//     required this.selectedFilter,
-//     required this.onFilterChanged,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         /// Section Header
-//         Row(
-//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//           children: [
-//             const Text(
-//               'Live Reports',
-//               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-//             ),
-//             Row(
-//               children: [
-//                 FilterButton(
-//                   label: 'MISSING',
-//                   isActive: selectedFilter == 'MISSING',
-//                   onTap: () => onFilterChanged('MISSING'),
-//                 ),
-//                 const SizedBox(width: 8),
-//                 FilterButton(
-//                   label: 'FOUND',
-//                   isActive: selectedFilter == 'FOUND',
-//                   onTap: () => onFilterChanged('FOUND'),
-//                 ),
-//               ],
-//             ),
-//           ],
-//         ),
-//         const SizedBox(height: 16),
-
-//         /// Report Cards
-//         ReportCard(
-//           name: 'Amina Abdi',
-//           age: 21,
-//           gender: 'female',
-//           location: 'Mogodisho, hdn',
-//           date: 'Mar 12, 2026',
-//           imagePath: 'assets/aamina.png',
-//         ),
-//         const SizedBox(height: 12),
-//         ReportCard(
-//           name: 'abdi hasan',
-//           age: 22,
-//           gender: 'Male',
-//           location: 'Xudur, sooqa ,xoolaha',
-//           date: 'Feb 11, 2026',
-//           imagePath: 'assets/abdi.png',
-//         ),
-//         const SizedBox(height: 12),
-//         ReportCard(
-//           name: 'ahmed moho',
-//           age: 13,
-//           gender: 'Male',
-//           location: 'Guriceel, MO',
-//           date: 'Oct 12, 2025',
-//           imagePath: 'assets/ahmed.png',
-//         ),
-//         const SizedBox(height: 20),
-//       ],
-//     );
-//   }
-// }
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../api/api.dart';
+import '../screens/report_details/report_details_screen.dart';
+import '../screens/report_details/report_details_utils.dart';
 import 'filter_button.dart';
 import 'report_card.dart';
 
@@ -89,12 +14,14 @@ class LiveReportsSection extends StatefulWidget {
   final String selectedFilter;
   final Function(String) onFilterChanged;
   final String searchQuery;
+  final int refreshSignal;
 
   const LiveReportsSection({
     super.key,
     required this.selectedFilter,
     required this.onFilterChanged,
     this.searchQuery = '',
+    this.refreshSignal = 0,
   });
 
   @override
@@ -106,18 +33,39 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
   String? _error;
   List<Map<String, dynamic>> _missing = [];
   List<Map<String, dynamic>> _found = [];
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _fetchReports();
+    _refreshTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _fetchReports(showLoading: false),
+    );
   }
 
-  Future<void> _fetchReports() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  @override
+  void didUpdateWidget(covariant LiveReportsSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.refreshSignal != oldWidget.refreshSignal) {
+      _fetchReports();
+    }
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _fetchReports({bool showLoading = true}) async {
+    if (showLoading) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    }
 
     try {
       final missingRes = await http
@@ -147,16 +95,19 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
             [];
       }
 
+      if (!mounted) return;
       setState(() {
         _missing = parseList(missingRes);
         _found = parseList(foundRes);
+        _error = null;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = 'Failed to load reports: $e';
       });
     } finally {
-      if (mounted) {
+      if (mounted && showLoading) {
         setState(() {
           _isLoading = false;
         });
@@ -234,16 +185,16 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
               final name =
                   (report['fullName'] ?? report['description'] ?? 'Unknown')
                       .toString();
-              final age =
-                  int.tryParse(
-                    (report['age'] ?? report['estimatedAge'] ?? '0').toString(),
-                  ) ??
-                  0;
+              final age = ReportDetailsUtils.formatAge(
+                report['age'] ?? report['estimatedAge'],
+              );
               final gender = (report['gender'] ?? 'Unknown').toString();
               final location =
                   (report['lastSeenLocation'] ?? report['locationFound'] ?? '')
                       .toString();
-              final date = (report['lastSeenDate'] ?? '').toString();
+              final date = ReportDetailsUtils.formatDate(
+                report['lastSeenDate'] ?? report['createdAt'],
+              );
               final imagePath = (report['photo'] ?? '')
                   .toString(); // Cloudinary URL
 
@@ -258,6 +209,17 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
                   imagePath: imagePath.isEmpty
                       ? 'assets/aamina.png'
                       : imagePath,
+                  onTap: () {
+                    final details = ReportDetailsScreen.fromReport(
+                      report: report,
+                      isMissing: selectedFilter != 'FOUND',
+                    );
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ReportDetailsScreen(data: details),
+                      ),
+                    );
+                  },
                 ),
               );
             }).toList(),

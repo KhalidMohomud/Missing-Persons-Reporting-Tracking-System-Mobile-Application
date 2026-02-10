@@ -35,7 +35,7 @@ class UserSession {
     final userMap = _extractUserMap(data);
     final fallbackEmail = emailInput.trim().isNotEmpty
         ? emailInput.trim()
-        : 'guest@example.com';
+        : 'guest@gmail.com';
     final email = _firstString(userMap, ['email', 'mail']) ?? fallbackEmail;
     final name =
         _firstString(userMap, ['fullName', 'name', 'username']) ??
