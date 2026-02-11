@@ -4,7 +4,7 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"/>
     <application
-        android:label="app_flutter"
+        android:label="Baafiye"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
