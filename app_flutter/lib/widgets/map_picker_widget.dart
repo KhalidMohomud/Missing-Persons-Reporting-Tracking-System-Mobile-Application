@@ -37,7 +37,7 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
   Future<void> _useCurrentLocation() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      _showMessage('Please enable location services.');
+      _showMessage('Fadlan fur adeegyada goobta.');
       return;
     }
 
@@ -47,7 +47,7 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
     }
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
-      _showMessage('Location permission denied.');
+      _showMessage('Oggolaanshaha goobta waa la diiday.');
       return;
     }
 
@@ -125,14 +125,14 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
             Text(
               _hasPicked
                   ? 'Lat: ${_selected.latitude.toStringAsFixed(4)}  Lng: ${_selected.longitude.toStringAsFixed(4)}'
-                  : 'No location selected',
+                  : 'Goob lama xulin',
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
             if (widget.showCurrentLocationButton)
               TextButton.icon(
                 onPressed: _useCurrentLocation,
                 icon: const Icon(Icons.my_location, size: 16),
-                label: const Text('Use Current'),
+                label: const Text('Isticmaal Hadda'),
               ),
           ],
         ),

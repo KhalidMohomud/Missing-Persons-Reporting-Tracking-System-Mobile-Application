@@ -33,6 +33,17 @@ class _HomeScreenState extends State<HomeScreen> {
               onNotificationsTap: () {
                 Navigator.of(context).pushNamed(AppRoutes.alertsCenter);
               },
+              onAvatarTap: () {
+                if (!UserSession.isLoggedIn) {
+                  showLoginRequiredDialog(context).then((shouldLogin) {
+                    if (shouldLogin && context.mounted) {
+                      Navigator.of(context).pushNamed(AppRoutes.login);
+                    }
+                  });
+                  return;
+                }
+                Navigator.of(context).pushNamed(AppRoutes.myReports);
+              },
             ),
 
             /// Fixed Search Section

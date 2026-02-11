@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../report_details_models.dart';
 import '../report_details_theme.dart';
@@ -74,8 +75,9 @@ class ReportDetailsActions extends StatelessWidget {
   }
 
   void _showCallMessage(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Call ${data.contactPhone}')),
-    );
+    final phone = data.contactPhone.trim();
+    if (phone.isEmpty) return;
+    final uri = Uri(scheme: 'tel', path: phone);
+    launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 }

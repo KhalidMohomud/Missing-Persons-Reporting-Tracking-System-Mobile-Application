@@ -54,7 +54,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
       final role = UserSession.current.value?.role.toLowerCase() ?? 'public';
       if (role != 'admin') {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Admin only.')),
+          const SnackBar(content: Text('Admin kaliya.')),
         );
         Navigator.of(context).pop();
       }
@@ -133,7 +133,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _reportError = 'Failed to load reports: $e';
+        _reportError = 'Kuma guulaysan in la soo dejiyo warbixinada: $e';
       });
     } finally {
       if (mounted) {
@@ -160,9 +160,9 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
       final location = _safeString(report['lastSeenLocation']);
       final date = _safeString(report['lastSeenDate']);
       final parts = [name, location, date].where((v) => v.isNotEmpty).toList();
-      return parts.isEmpty ? 'Missing report' : parts.join(' • ');
+      return parts.isEmpty ? 'Warbixin Maqan' : parts.join(' • ');
     }
-    final location = _safeString(report['locationFound'], 'Found report');
+    final location = _safeString(report['locationFound'], 'Warbixin La Helay');
     final gender = _safeString(report['gender']);
     final age = _safeString(report['estimatedAge']);
     final parts = [location];
@@ -212,7 +212,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
 
       if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Alert sent.')),
+        const SnackBar(content: Text('Digniinta waa la diray.')),
         );
         Navigator.of(context).pop(true);
       } else {
@@ -223,7 +223,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e')),
+        SnackBar(content: Text('Khalad shabakad: $e')),
       );
     } finally {
       if (mounted) {
@@ -240,7 +240,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: BackButton(color: primaryBlue),
-        title: const Text('Create Alert'),
+        title: const Text('Samee Digniin'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -248,7 +248,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Report Type',
+              'Nooca Warbixinta',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
@@ -261,7 +261,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
                   child: SizedBox(
                     width: double.infinity,
                     child: Text(
-                      'Missing report',
+                      'Warbixin Maqan',
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -271,7 +271,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
                   child: SizedBox(
                     width: double.infinity,
                     child: Text(
-                      'Found report',
+                      'Warbixin La Helay',
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -295,7 +295,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Select Report',
+              'Dooro Warbixin',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
@@ -340,7 +340,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
               ),
             const SizedBox(height: 16),
             const Text(
-              'Alert Message',
+              'Fariinta Digniinta',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
@@ -348,7 +348,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
               controller: _messageController,
               maxLines: 3,
               decoration: InputDecoration(
-                hintText: 'Missing child alert near Bakara!',
+                hintText: 'Digniin: qof maqan oo Bakara ku dhow!',
                 filled: true,
                 fillColor: Colors.grey.shade100,
                 border: OutlineInputBorder(
@@ -359,7 +359,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Pick Alert Location',
+              'Dooro Goobta Digniinta',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
@@ -373,7 +373,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Radius (km): ${_radiusKm.toStringAsFixed(0)}',
+              'Raadiyaha (km): ${_radiusKm.toStringAsFixed(0)}',
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             Slider(
@@ -408,7 +408,7 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
                         ),
                       )
                     : const Text(
-                        'Create Alert',
+                        'Dir Digniin',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

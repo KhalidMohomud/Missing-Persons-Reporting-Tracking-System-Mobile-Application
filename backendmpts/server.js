@@ -16,9 +16,9 @@ app.use(cors());
 app.use(helmet());
 app.use(clerkMiddleware());
 
-// app.get('/', (req, res) => {
-//     res.send('Missing Persons API is running...');
-// });
+app.get('/', (req, res) => {
+    res.send('Missing Persons API is running...');
+});
 
 // 3. Routes (Ensure NO SPACES in the string)
 app.use("/api/v1", userRouter);

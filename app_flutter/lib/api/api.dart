@@ -1,4 +1,4 @@
-const String URL_BASE = "http://localhost:3003/api/v1";
+const String URL_BASE = "https://backendmpts.onrender.com/api/v1";
 
 const String LOGIN_URL = "$URL_BASE/user/signin";
 const String REGISTER_URL = "$URL_BASE/user/signup";

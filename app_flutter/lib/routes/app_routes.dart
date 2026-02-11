@@ -10,6 +10,7 @@ import '../screens/report_found_screen.dart';
 import '../screens/add_found_report_screen.dart';
 import '../screens/add_alert_screen.dart';
 import '../screens/alerts_notifications_screen.dart';
+import '../screens/my_reports_screen.dart';
 
 class AppRoutes {
   static const String login = '/';
@@ -21,6 +22,7 @@ class AppRoutes {
   static const String reportFound = '/report-found';
   static const String addAlert = '/add-alert';
   static const String alertsCenter = '/alerts-center';
+  static const String myReports = '/my-reports';
   static const String admin = '/admin';
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -44,6 +46,8 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => const AlertsNotificationsScreen(),
         );
+      case myReports:
+        return MaterialPageRoute(builder: (_) => const MyReportsScreen());
       case admin:
         return MaterialPageRoute(builder: (_) => const AdminScreen());
       default:

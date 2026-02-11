@@ -73,12 +73,12 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
     }
   }
 
-  Future<void> _pickPhoto() async {
+  Future<void> _pickPhoto(ImageSource source) async {
     final picked = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 70, // Reduced from 85 to reduce file size
-      maxWidth: 1000, // Reduced from 1200 to reduce file size
-      maxHeight: 1000, // Add max height constraint
+      source: source,
+      imageQuality: 70,
+      maxWidth: 1000,
+      maxHeight: 1000,
     );
     if (picked == null) return;
     final bytes = await picked.readAsBytes();
@@ -86,6 +86,50 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
     setState(() {
       _photoBytes = bytes;
     });
+  }
+
+  void _showImagePickerSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 48,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: const Text('Kaamirada'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickPhoto(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Sawirada'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickPhoto(ImageSource.gallery);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   InputDecoration _inputDecoration({
@@ -164,7 +208,7 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
         contactName.isEmpty ||
         contactPhone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields.')),
+        const SnackBar(content: Text('Fadlan buuxi dhammaan xogta muhiimka ah.')),
       );
       return;
     }
@@ -172,14 +216,14 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
     if (_photoBytes == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Please upload a photo.')));
+      ).showSnackBar(const SnackBar(content: Text('Fadlan soo geli sawir.')));
       return;
     }
 
     final parsedAge = int.tryParse(ageText);
     if (parsedAge == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid age.')),
+        const SnackBar(content: Text('Fadlan geli da\' sax ah.')),
       );
       return;
     }
@@ -236,7 +280,7 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Report submitted successfully.')),
+            const SnackBar(content: Text('Warbixinta si guul leh ayaa loo diray.')),
           );
           Navigator.of(context).pop(true);
         }
@@ -244,8 +288,8 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
         if (mounted) {
           final errorBody = response.body;
           final errorMessage = errorBody.isNotEmpty
-              ? 'Submission failed: ${response.statusCode}'
-              : 'Submission failed. Try again.';
+              ? 'Gudbintu way fashilantay: ${response.statusCode}'
+              : 'Gudbintu way fashilantay. Mar kale isku day.';
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(errorMessage)));
@@ -254,7 +298,7 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Network error: ${e.toString()}')),
+          SnackBar(content: Text('Khalad shabakad: ${e.toString()}')),
         );
       }
     } finally {
@@ -291,7 +335,7 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
           ),
         ),
         title: const Text(
-          'Report Missing',
+          'Warbixin Maqan',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
@@ -311,7 +355,7 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(22),
-                    onTap: _pickPhoto,
+                    onTap: _showImagePickerSheet,
                     child: Padding(
                       padding: const EdgeInsets.all(18),
                       child: Stack(
@@ -321,12 +365,9 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
                             Positioned.fill(
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(18),
-                                child: Opacity(
-                                  opacity: 0.18,
-                                  child: Image.memory(
-                                    _photoBytes!,
-                                    fit: BoxFit.cover,
-                                  ),
+                                child: Image.memory(
+                                  _photoBytes!,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
                             ),
@@ -336,7 +377,9 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
                                 width: 64,
                                 height: 64,
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: Colors.white.withOpacity(
+                                    _photoBytes == null ? 1 : 0.85,
+                                  ),
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
@@ -347,18 +390,34 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
                                   ],
                                 ),
                                 child: Icon(
-                                  Icons.upload,
+                                  _photoBytes == null
+                                      ? Icons.upload
+                                      : Icons.edit_outlined,
                                   color: primaryBlue,
                                   size: 30,
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              Text(
-                                'Upload Clear Photo',
-                                style: TextStyle(
-                                  color: Colors.grey.shade800,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.3,
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(
+                                    _photoBytes == null ? 1 : 0.85,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  _photoBytes == null
+                                      ? 'Soo geli sawir cad'
+                                      : 'Taabo si aad u beddesho',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade800,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.3,
+                                  ),
                                 ),
                               ),
                             ],
@@ -371,14 +430,14 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
               ),
               const SizedBox(height: 20),
               const Text(
-                'Full Name',
+                'Magaca oo buuxa',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _fullNameController,
                 decoration: _inputDecoration(
-                  hint: 'Enter full name',
+                  hint: 'Geli magaca oo buuxa',
                   icon: Icons.person_outline,
                 ),
               ),
@@ -390,7 +449,7 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Current Age',
+                          'Da\'da hadda',
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 8),
@@ -398,7 +457,7 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
                           controller: _ageController,
                           keyboardType: TextInputType.number,
                           decoration: _inputDecoration(
-                            hint: 'Years',
+                            hint: 'Sano',
                             icon: Icons.cake_outlined,
                           ),
                         ),
@@ -411,28 +470,28 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Gender',
+                          'Jinsiga',
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 8),
                         DropdownButtonFormField<String>(
                           value: _selectedGender,
                           decoration: _inputDecoration(
-                            hint: 'Select',
+                            hint: 'Dooro',
                             icon: Icons.person_outline,
                           ),
                           items: const [
                             DropdownMenuItem(
                               value: 'Male',
-                              child: Text('Male'),
+                              child: Text('Lab'),
                             ),
                             DropdownMenuItem(
                               value: 'Female',
-                              child: Text('Female'),
+                              child: Text('Dhedig'),
                             ),
                             DropdownMenuItem(
                               value: 'Other',
-                              child: Text('Other'),
+                              child: Text('Kale'),
                             ),
                           ],
                           onChanged: (value) {
@@ -446,20 +505,20 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Last Known Location',
+                'Goobtii ugu dambaysay',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _locationController,
                 decoration: _inputDecoration(
-                  hint: 'Street, city, or landmark',
+                  hint: 'Waddo, magaalo, ama astaan',
                   icon: Icons.place_outlined,
                 ),
               ),
               const SizedBox(height: 16),
               const Text(
-                'Date of Disappearance',
+                'Taariikhda maqnaanshaha',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
@@ -478,14 +537,14 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Contact Information',
+                'Macluumaadka xiriirka',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _contactNameController,
                 decoration: _inputDecoration(
-                  hint: 'Your name (contact)',
+                  hint: 'Magacaaga (xiriir)',
                   icon: Icons.badge_outlined,
                 ),
               ),
@@ -494,13 +553,13 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
                 controller: _contactPhoneController,
                 keyboardType: TextInputType.phone,
                 decoration: _inputDecoration(
-                  hint: 'Your phone number',
+                  hint: 'Lambarka taleefankaaga',
                   icon: Icons.phone_outlined,
                 ),
               ),
               const SizedBox(height: 16),
               const Text(
-                'Additional Notes',
+                'Faahfaahin dheeraad ah',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
@@ -508,7 +567,7 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
                 controller: _notesController,
                 maxLines: 3,
                 decoration: _inputDecoration(
-                  hint: 'Clothing, last seen time, etc.',
+                  hint: 'Dhar, waqtigii ugu dambaysay la arkay, iwm.',
                   icon: Icons.notes_outlined,
                 ),
               ),
@@ -524,13 +583,13 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
                   elevation: 2,
                 ),
                 child: const Text(
-                  'Submit Official Report',
+                  'Gudbi warbixin rasmi ah',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
               ),
               const SizedBox(height: 12),
               Text(
-                'By submitting, you confirm the information is accurate to the best of your knowledge.',
+                'Markaad gudbiso, waxaad xaqiijinaysaa in xogtu sax tahay intaad ogtahay.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
               ),

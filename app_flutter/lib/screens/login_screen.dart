@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
 import '../api/api.dart';
 import '../routes/app_routes.dart';
 import '../session/user_session.dart';
@@ -154,267 +155,334 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final bool googleLoading = _socialProviderLoading == 'google';
     final bool facebookLoading = _socialProviderLoading == 'facebook';
+    final Color surface = const Color(0xFFF6F8FB);
+    final Color deepBlue = const Color(0xFF1D5C7A);
+    final Color softBlue = const Color(0xFF3F8FB7);
+
+    final titleStyle = GoogleFonts.manrope(
+      fontSize: 26,
+      fontWeight: FontWeight.w800,
+      color: Colors.black87,
+    );
+    final subtitleStyle = GoogleFonts.manrope(
+      fontSize: 13,
+      fontWeight: FontWeight.w500,
+      color: Colors.blueGrey.shade500,
+    );
+    final labelStyle = GoogleFonts.manrope(
+      fontSize: 12,
+      fontWeight: FontWeight.w700,
+      color: Colors.blueGrey.shade700,
+    );
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 20),
-
-                /// Logo
-                Center(
-                  child: Column(
-                    children: [
-                      Image.asset(
-                        'assets/iconsapp.png',
-                        height: 72,
-                        errorBuilder: (_, __, ___) =>
-                            const Icon(Icons.person, size: 80),
+      resizeToAvoidBottomInset: true,
+      backgroundColor: surface,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -120,
+            right: -80,
+            child: Container(
+              width: 240,
+              height: 240,
+              decoration: BoxDecoration(
+                color: softBlue.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -140,
+            left: -60,
+            child: Container(
+              width: 260,
+              height: 260,
+              decoration: BoxDecoration(
+                color: primaryBlue.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 92,
+                          height: 92,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 18,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(16),
+                          child: Image.asset(
+                            'assets/iconsapp.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) =>
+                                const Icon(Icons.person, size: 56),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text('Welcome Back', style: titleStyle),
+                        const SizedBox(height: 4),
+                        Text('Sign in to continue', style: subtitleStyle),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(26),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text('Email', style: labelStyle),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: _inputDecoration(
+                              'example@gmail.com',
+                              icon: Icons.email_outlined,
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Email is required';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 14),
+                          Text('Password', style: labelStyle),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: !_showPassword,
+                            decoration:
+                                _inputDecoration(
+                                  '••••••••',
+                                  icon: Icons.lock_outline,
+                                ).copyWith(
+                                  suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(
+                                        () => _showPassword = !_showPassword,
+                                      );
+                                    },
+                                    icon: Icon(
+                                      _showPassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ),
+                            validator: (value) {
+                              if (value == null || value.length < 6) {
+                                return 'Minimum 6 characters';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Checkbox(
+                                value: _rememberMe,
+                                activeColor: primaryBlue,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                onChanged: (v) {
+                                  setState(() => _rememberMe = v ?? false);
+                                },
+                              ),
+                              Text(
+                                'Remember me',
+                                style: GoogleFonts.manrope(
+                                  fontSize: 12,
+                                  color: Colors.blueGrey.shade700,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const Spacer(),
+                              TextButton(
+                                onPressed: () {},
+                                child: Text(
+                                  'Forgot password?',
+                                  style: GoogleFonts.manrope(
+                                    color: primaryBlue,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (_errorMessage != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                _errorMessage!,
+                                style: GoogleFonts.manrope(
+                                  color: Colors.red.shade600,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          _GradientButton(
+                            isLoading: _isLoading,
+                            text: 'Sign In',
+                            onPressed: (_isLoading || _isSocialLoading)
+                                ? null
+                                : _handleLogin,
+                            colors: [primaryBlue, deepBlue],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Divider(
+                                  color: Colors.grey.shade300,
+                                  thickness: 1,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
+                                child: Text(
+                                  'OR',
+                                  style: GoogleFonts.manrope(
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.blueGrey.shade400,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Divider(
+                                  color: Colors.grey.shade300,
+                                  thickness: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            onPressed: (_isLoading || _isSocialLoading)
+                                ? null
+                                : () => _handleSocialLogin('google'),
+                            icon: googleLoading
+                                ? SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: primaryBlue,
+                                    ),
+                                  )
+                                : Image.asset(
+                                    'assets/google.png',
+                                    height: 22,
+                                    errorBuilder: (_, __, ___) =>
+                                        const Icon(Icons.g_mobiledata),
+                                  ),
+                            label: Text(
+                              googleLoading
+                                  ? 'Signing in...'
+                                  : 'Continue with Google',
+                              style: GoogleFonts.manrope(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: _socialButtonStyle(),
+                          ),
+                          const SizedBox(height: 10),
+                          OutlinedButton.icon(
+                            onPressed: (_isLoading || _isSocialLoading)
+                                ? null
+                                : () => _handleSocialLogin('facebook'),
+                            icon: facebookLoading
+                                ? SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: primaryBlue,
+                                    ),
+                                  )
+                                : const Icon(Icons.facebook, color: Colors.blue),
+                            label: Text(
+                              facebookLoading
+                                  ? 'Signing in...'
+                                  : 'Continue with Facebook',
+                              style: GoogleFonts.manrope(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: _socialButtonStyle(),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Welcome Back',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Don't have an account?",
+                        style: GoogleFonts.manrope(
+                          fontSize: 13,
+                          color: Colors.blueGrey.shade600,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Sign in to continue',
-                        style: TextStyle(color: Colors.grey.shade600),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(AppRoutes.register);
+                        },
+                        child: Text(
+                          'Sign up',
+                          style: GoogleFonts.manrope(
+                            color: primaryBlue,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ),
-
-                const SizedBox(height: 24),
-
-                /// Email
-                const Text(
-                  'Email',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: _inputDecoration(
-                    'example@gmail.com',
-                    icon: Icons.email_outlined,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Email is required';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 12),
-
-                /// Password
-                const Text(
-                  'Password',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 4),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: !_showPassword,
-                  decoration:
-                      _inputDecoration(
-                        '••••••••',
-                        icon: Icons.lock_outline,
-                      ).copyWith(
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() => _showPassword = !_showPassword);
-                          },
-                          icon: Icon(
-                            _showPassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ),
-                  validator: (value) {
-                    if (value == null || value.length < 6) {
-                      return 'Minimum 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 8),
-
-                /// Remember + forgot
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _rememberMe,
-                      onChanged: (v) {
-                        setState(() => _rememberMe = v ?? false);
-                      },
-                    ),
-                    const Text('Remember me'),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () {},
-                      child: Text(
-                        'Forgot password?',
-                        style: TextStyle(color: primaryBlue),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 8),
-
-                /// Error message
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-
-                /// Sign In
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryBlue,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  onPressed: (_isLoading || _isSocialLoading)
-                      ? null
-                      : _handleLogin,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Sign In',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-
-                const SizedBox(height: 16),
-
-                /// Divider
-                Row(
-                  children: const [
-                    Expanded(child: Divider()),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('OR'),
-                    ),
-                    Expanded(child: Divider()),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                /// Google
-                OutlinedButton.icon(
-                  onPressed: (_isLoading || _isSocialLoading)
-                      ? null
-                      : () => _handleSocialLogin('google'),
-                  icon: googleLoading
-                      ? SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: primaryBlue,
-                          ),
-                        )
-                      : Image.asset(
-                          'assets/google.png',
-                          height: 22,
-                          errorBuilder: (_, __, ___) =>
-                              const Icon(Icons.g_mobiledata),
-                        ),
-                  label: Text(
-                    googleLoading ? 'Signing in...' : 'Continue with Google',
-                  ),
-                  style: _socialButtonStyle(),
-                ),
-
-                const SizedBox(height: 8),
-
-                /// Facebook
-                OutlinedButton.icon(
-                  onPressed: (_isLoading || _isSocialLoading)
-                      ? null
-                      : () => _handleSocialLogin('facebook'),
-                  icon: facebookLoading
-                      ? SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: primaryBlue,
-                          ),
-                        )
-                      : const Icon(Icons.facebook, color: Colors.blue),
-                  label: Text(
-                    facebookLoading
-                        ? 'Signing in...'
-                        : 'Continue with Facebook',
-                  ),
-                  style: _socialButtonStyle(),
-                ),
-
-                const SizedBox(height: 12),
-
-                const Spacer(),
-
-                /// Register
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Don't have an account?"),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pushNamed(AppRoutes.register);
-                      },
-                      child: Text(
-                        'Sign up',
-                        style: TextStyle(
-                          color: primaryBlue,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-              ],
+                  const SizedBox(height: 10),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -422,12 +490,22 @@ class _LoginScreenState extends State<LoginScreen> {
   InputDecoration _inputDecoration(String hint, {IconData? icon}) {
     return InputDecoration(
       hintText: hint,
+      hintStyle: GoogleFonts.manrope(color: Colors.blueGrey.shade400),
       filled: true,
-      fillColor: const Color(0xFFF2F3F5),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-      prefixIcon: icon != null ? Icon(icon, color: Colors.grey.shade600) : null,
+      fillColor: const Color(0xFFF2F4F8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      prefixIcon: icon != null
+          ? Container(
+              margin: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: Colors.blueGrey.shade600, size: 18),
+            )
+          : null,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(18),
         borderSide: BorderSide.none,
       ),
     );
@@ -436,7 +514,9 @@ class _LoginScreenState extends State<LoginScreen> {
   ButtonStyle _socialButtonStyle() {
     return OutlinedButton.styleFrom(
       padding: const EdgeInsets.symmetric(vertical: 14),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      backgroundColor: Colors.white,
+      side: BorderSide(color: Colors.blueGrey.shade100),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
     );
   }
 
@@ -565,6 +645,64 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class _GradientButton extends StatelessWidget {
+  final String text;
+  final bool isLoading;
+  final VoidCallback? onPressed;
+  final List<Color> colors;
+
+  const _GradientButton({
+    required this.text,
+    required this.isLoading,
+    required this.onPressed,
+    required this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 52,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.zero,
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: colors),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Container(
+            alignment: Alignment.center,
+            child: isLoading
+                ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(
+                    text,
+                    style: GoogleFonts.manrope(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+          ),
+        ),
+      ),
     );
   }
 }

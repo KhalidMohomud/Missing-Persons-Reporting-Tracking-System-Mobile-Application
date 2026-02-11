@@ -43,9 +43,9 @@ class _AddFoundReportScreenState extends State<AddFoundReportScreen> {
     super.dispose();
   }
 
-  Future<void> _pickPhoto() async {
+  Future<void> _pickPhoto(ImageSource source) async {
     final picked = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
+      source: source,
       imageQuality: 70,
       maxWidth: 1000,
       maxHeight: 1000,
@@ -56,6 +56,50 @@ class _AddFoundReportScreenState extends State<AddFoundReportScreen> {
     setState(() {
       _photoBytes = bytes;
     });
+  }
+
+  void _showImagePickerSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 48,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: const Text('Kaamirada'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickPhoto(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Sawirada'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickPhoto(ImageSource.gallery);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _submitFoundReport() async {
@@ -84,17 +128,17 @@ class _AddFoundReportScreenState extends State<AddFoundReportScreen> {
     }
 
     if (_photoBytes == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Fadlan sawir soo geli.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Fadlan sawir soo geli.')));
       return;
     }
 
     final parsedAge = int.tryParse(ageText);
     if (parsedAge == null || parsedAge <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Da\'da ma saxna.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Da\'da ma saxna.')));
       return;
     }
 
@@ -149,9 +193,9 @@ class _AddFoundReportScreenState extends State<AddFoundReportScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Network error: $e')));
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
@@ -182,7 +226,7 @@ class _AddFoundReportScreenState extends State<AddFoundReportScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               GestureDetector(
-                onTap: _pickPhoto,
+                onTap: _showImagePickerSheet,
                 child: Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
@@ -192,32 +236,71 @@ class _AddFoundReportScreenState extends State<AddFoundReportScreen> {
                   ),
                   child: Column(
                     children: [
-                      Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (_photoBytes != null)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(18),
+                              child: Image.memory(
+                                _photoBytes!,
+                                height: 140,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ],
-                        ),
-                        child: Icon(Icons.upload, color: accentGold, size: 30),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _photoBytes == null
-                            ? 'Soo geli sawir'
-                            : 'Sawir waa la doortay',
-                        style: TextStyle(
-                          color: Colors.grey.shade800,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.3,
-                        ),
+                          Column(
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(
+                                    _photoBytes == null ? 1 : 0.85,
+                                  ),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  _photoBytes == null
+                                      ? Icons.upload
+                                      : Icons.edit_outlined,
+                                  color: accentGold,
+                                  size: 30,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(
+                                    _photoBytes == null ? 1 : 0.85,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  _photoBytes == null
+                                      ? 'Soo geli sawir'
+                                      : 'Taabo si aad u beddesho',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade800,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -250,7 +333,10 @@ class _AddFoundReportScreenState extends State<AddFoundReportScreen> {
                           icon: Icons.person_outline,
                         ),
                         items: const [
-                          DropdownMenuItem(value: 'Female', child: Text('Dhedig')),
+                          DropdownMenuItem(
+                            value: 'Female',
+                            child: Text('Dhedig'),
+                          ),
                           DropdownMenuItem(value: 'Male', child: Text('Lab')),
                           DropdownMenuItem(value: 'Other', child: Text('Kale')),
                         ],
@@ -364,11 +450,8 @@ class _LabeledField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 5),
         child,
       ],
     );

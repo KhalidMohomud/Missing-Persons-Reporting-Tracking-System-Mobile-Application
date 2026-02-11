@@ -53,7 +53,7 @@ class _AddTipScreenState extends State<AddTipScreen> {
 
     if (widget.reportId.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report ID missing.')),
+        const SnackBar(content: Text('Aqoonsiga warbixinta wuu maqan yahay.')),
       );
       return;
     }
@@ -134,7 +134,7 @@ class _AddTipScreenState extends State<AddTipScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e')),
+        SnackBar(content: Text('Khalad shabakad: $e')),
       );
     } finally {
       if (mounted) {
@@ -151,7 +151,7 @@ class _AddTipScreenState extends State<AddTipScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: BackButton(color: primaryBlue),
-        title: const Text('Submit Tip'),
+        title: const Text('Gudbi Talo'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
@@ -161,7 +161,7 @@ class _AddTipScreenState extends State<AddTipScreen> {
             _TargetCard(name: widget.targetName, imageUrl: widget.imageUrl),
             const SizedBox(height: 20),
             const Text(
-              'Sighting Details',
+              'Faahfaahinta Aragtida',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
@@ -180,14 +180,14 @@ class _AddTipScreenState extends State<AddTipScreen> {
             ),
             const SizedBox(height: 18),
             const Text(
-              'Your Current Location',
+              'Goobtaada Hadda',
               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _locationController,
               decoration: InputDecoration(
-                hintText: 'City, Area, or Landmark',
+                hintText: 'Magaalo, degmo, ama astaan',
                 filled: true,
                 fillColor: Colors.grey.shade100,
                 prefixIcon: Icon(Icons.location_on, color: primaryBlue),
@@ -203,14 +203,14 @@ class _AddTipScreenState extends State<AddTipScreen> {
               onChanged: (value) {
                 setState(() => _anonymous = value);
               },
-              title: const Text('Anonymous tip'),
+              title: const Text('Talo qarsoodi ah'),
             ),
             SwitchListTile(
               value: _includeMap,
               onChanged: (value) {
                 setState(() => _includeMap = value);
               },
-              title: const Text('Include map location (optional)'),
+              title: const Text('Ku dar goobta khariidada (ikhtiyaari)'),
             ),
             if (_includeMap) ...[
               const SizedBox(height: 8),
@@ -230,7 +230,7 @@ class _AddTipScreenState extends State<AddTipScreen> {
                 onPressed: _isSubmitting ? null : _submitTip,
                 icon: const Icon(Icons.check_circle_outline, color: Colors.white),
                 label: Text(
-                  _isSubmitting ? 'Submitting...' : 'Submit Tip',
+                  _isSubmitting ? 'Gudbinayaa...' : 'Gudbi Talo',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -295,12 +295,12 @@ class _TargetCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Case Target',
+                'Qofka la raadinayo',
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 4),
               Text(
-                name.isNotEmpty ? name : 'Unknown',
+                name.isNotEmpty ? name : 'Lama yaqaan',
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,

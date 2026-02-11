@@ -3,8 +3,9 @@ import '../session/user_session.dart';
 
 class HomeHeader extends StatelessWidget {
   final VoidCallback? onNotificationsTap;
+  final VoidCallback? onAvatarTap;
 
-  const HomeHeader({super.key, this.onNotificationsTap});
+  const HomeHeader({super.key, this.onNotificationsTap, this.onAvatarTap});
 
   @override
   Widget build(BuildContext context) {
@@ -22,29 +23,34 @@ class HomeHeader extends StatelessWidget {
                 final hasPhoto =
                     photoUrl.isNotEmpty && photoUrl.startsWith('http');
 
-                return Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 25,
-                      backgroundColor: Colors.grey.shade300,
-                      backgroundImage: hasPhoto ? NetworkImage(photoUrl) : null,
-                      child: hasPhoto
-                          ? null
-                          : const Icon(Icons.person, size: 30),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        name,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey,
+                return InkWell(
+                  borderRadius: BorderRadius.circular(30),
+                  onTap: onAvatarTap,
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 25,
+                        backgroundColor: Colors.grey.shade300,
+                        backgroundImage:
+                            hasPhoto ? NetworkImage(photoUrl) : null,
+                        child: hasPhoto
+                            ? null
+                            : const Icon(Icons.person, size: 30),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          name,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               },
             ),
