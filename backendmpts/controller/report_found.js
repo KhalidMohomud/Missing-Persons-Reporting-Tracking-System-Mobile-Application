@@ -2,6 +2,13 @@ import { db } from "../firebase/admin.js";
 import admin from "firebase-admin";
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
+import {
+    reporterEmailFromPayload,
+    reporterNameFromPayload,
+    resolveReporterName,
+    withReporterName,
+    withReporterNames,
+} from "../services/report_reporters.js";
 
 dotenv.config();
 
@@ -18,6 +25,11 @@ const isHttpUrl = (value) => /^https?:\/\//i.test(value || "");
 export const createFoundReport = async (req, res) => {
     try {
         const reporterId = req.auth?.userId || req.body?.reportedBy || "anonymous";
+        const reporterName = await resolveReporterName(
+            reporterId,
+            reporterNameFromPayload(req.body),
+        );
+        const reporterEmail = reporterEmailFromPayload(req.body);
 
         const {
             description,
@@ -86,6 +98,8 @@ export const createFoundReport = async (req, res) => {
             locationFound: String(locationFound).trim(),
             photo: imageUrl,
             reportedBy: reporterId,
+            ...(reporterName ? { reportedByName: reporterName } : {}),
+            ...(reporterEmail ? { reportedByEmail: reporterEmail } : {}),
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         };
 
@@ -112,7 +126,9 @@ export const getFoundReports = async (req, res) => {
             return res.status(404).json({ error: "No found reports found" });
         }
 
-        const reports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const reports = await withReporterNames(
+            snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })),
+        );
         return res.status(200).json({ success: true, count: reports.length, data: reports });
     } catch (err) {
         console.error("Get found reports error:", err);
@@ -130,7 +146,8 @@ export const getFoundReportById = async (req, res) => {
         if (!doc.exists) {
             return res.status(404).json({ error: "Report not found" });
         }
-        return res.status(200).json({ success: true, data: { id: doc.id, ...doc.data() } });
+        const report = await withReporterName({ id: doc.id, ...doc.data() });
+        return res.status(200).json({ success: true, data: report });
     } catch (err) {
         console.error("Get found report by ID error:", err);
         return res.status(500).json({ error: "Failed to fetch report" });
@@ -170,7 +187,8 @@ export const updateFoundReport = async (req, res) => {
         await docRef.update(updateData);
 
         const updatedDoc = await docRef.get();
-        return res.status(200).json({ success: true, data: { id: updatedDoc.id, ...updatedDoc.data() } });
+        const report = await withReporterName({ id: updatedDoc.id, ...updatedDoc.data() });
+        return res.status(200).json({ success: true, data: report });
     } catch (err) {
         console.error("Update found report error:", err);
         return res.status(500).json({ error: "Failed to update report" });

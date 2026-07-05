@@ -372,10 +372,14 @@ class _ReportFoundScreenState extends State<ReportFoundScreen> {
     final photoBase64 = base64Encode(_photoBytes!);
     final photoDataUrl = 'data:image/jpeg;base64,$photoBase64';
 
+    final currentUser = UserSession.current.value;
     final reporterId =
-        UserSession.current.value?.email ??
-        UserSession.current.value?.name ??
+        currentUser?.id ??
+        currentUser?.email ??
+        currentUser?.name ??
         'anonymous';
+    final reporterName = currentUser?.name.trim() ?? '';
+    final reporterEmail = currentUser?.email.trim() ?? '';
 
     final payload = {
       'description': description,
@@ -386,6 +390,8 @@ class _ReportFoundScreenState extends State<ReportFoundScreen> {
       'locationFound': locationFound,
       'photo': photoDataUrl,
       'reportedBy': reporterId,
+      if (reporterName.isNotEmpty) 'reportedByName': reporterName,
+      if (reporterEmail.isNotEmpty) 'reportedByEmail': reporterEmail,
     };
 
     setState(() => _isSubmitting = true);

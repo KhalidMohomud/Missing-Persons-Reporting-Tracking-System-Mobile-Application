@@ -22,9 +22,10 @@ class AdminUtils {
     if (value is Map<String, dynamic> && value['_seconds'] != null) {
       final seconds = value['_seconds'];
       if (seconds is int) {
-        final date =
-            DateTime.fromMillisecondsSinceEpoch(seconds * 1000, isUtc: true)
-                .toLocal();
+        final date = DateTime.fromMillisecondsSinceEpoch(
+          seconds * 1000,
+          isUtc: true,
+        ).toLocal();
         return _formatDatePart(date);
       }
     }
@@ -79,5 +80,60 @@ class AdminUtils {
       default:
         return Colors.orange.shade700;
     }
+  }
+
+  static String statusLabel(String status) {
+    switch (status) {
+      case 'resolved':
+        return 'Resolved';
+      case 'closed':
+        return 'Closed';
+      default:
+        return 'Open';
+    }
+  }
+
+  static String normalizedVerificationStatus(dynamic value) {
+    final status = safeString(value, 'pending').toLowerCase();
+    if (status == 'verified' ||
+        status == 'rejected' ||
+        status == 'under_review') {
+      return status;
+    }
+    return 'pending';
+  }
+
+  static Color verificationStatusColor(String status) {
+    switch (status) {
+      case 'verified':
+        return Colors.green.shade700;
+      case 'rejected':
+        return Colors.red.shade700;
+      case 'under_review':
+        return Colors.blue.shade700;
+      default:
+        return Colors.orange.shade700;
+    }
+  }
+
+  static String verificationStatusLabel(String status) {
+    switch (status) {
+      case 'verified':
+        return 'Verified';
+      case 'rejected':
+        return 'Rejected';
+      case 'under_review':
+        return 'Under Review';
+      default:
+        return 'Unverified';
+    }
+  }
+
+  static bool shouldShowVerificationStatus(
+    String reportStatus,
+    String verificationStatus,
+  ) {
+    if (reportStatus == 'pending') return true;
+    return verificationStatus == 'verified' || verificationStatus == 'rejected';
   }
 }

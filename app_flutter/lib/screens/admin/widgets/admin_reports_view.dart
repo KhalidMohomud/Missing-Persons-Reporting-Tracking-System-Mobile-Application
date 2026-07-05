@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../admin_theme.dart';
 import '../admin_utils.dart';
+import '../../verification/verification_chat_screen.dart';
 
 class AdminReportsView extends StatelessWidget {
   final bool isMissing;
   final List<Map<String, dynamic>> reports;
   final String? error;
   final String Function(Map<String, dynamic>) reporterNameFor;
-  final Future<void> Function(String id, String status)? onUpdateStatus;
+  final Future<void> Function()? onRefresh;
   final Future<void> Function(String id) onDelete;
 
   const AdminReportsView({
@@ -17,7 +18,7 @@ class AdminReportsView extends StatelessWidget {
     required this.reports,
     required this.error,
     required this.reporterNameFor,
-    required this.onUpdateStatus,
+    required this.onRefresh,
     required this.onDelete,
   });
 
@@ -47,7 +48,7 @@ class AdminReportsView extends StatelessWidget {
                 ? _MissingReportCard(
                     report: report,
                     reporterName: reporterNameFor(report),
-                    onUpdateStatus: onUpdateStatus,
+                    onRefresh: onRefresh,
                     onDelete: onDelete,
                   )
                 : _FoundReportCard(
@@ -72,13 +73,13 @@ class AdminReportsView extends StatelessWidget {
 class _MissingReportCard extends StatelessWidget {
   final Map<String, dynamic> report;
   final String reporterName;
-  final Future<void> Function(String id, String status)? onUpdateStatus;
+  final Future<void> Function()? onRefresh;
   final Future<void> Function(String id) onDelete;
 
   const _MissingReportCard({
     required this.report,
     required this.reporterName,
-    required this.onUpdateStatus,
+    required this.onRefresh,
     required this.onDelete,
   });
 
@@ -87,8 +88,17 @@ class _MissingReportCard extends StatelessWidget {
     final id = AdminUtils.safeString(report['id']);
     final name = AdminUtils.safeString(report['fullName'], 'Unknown');
     final status = AdminUtils.normalizedStatus(report['status']);
-    final location =
-        AdminUtils.safeString(report['lastSeenLocation'], 'Unknown location');
+    final verificationStatus = AdminUtils.normalizedVerificationStatus(
+      report['verificationStatus'],
+    );
+    final showVerificationStatus = AdminUtils.shouldShowVerificationStatus(
+      status,
+      verificationStatus,
+    );
+    final location = AdminUtils.safeString(
+      report['lastSeenLocation'],
+      'Unknown location',
+    );
     final date = AdminUtils.safeString(report['lastSeenDate']);
     final contactName = AdminUtils.safeString(report['contactName']);
     final contactPhone = AdminUtils.safeString(report['contactPhone']);
@@ -128,42 +138,62 @@ class _MissingReportCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       location,
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                     if (date.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         date,
-                        style:
-                            TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ],
                     if (reporterName.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         'Reported by $reporterName',
-                        style:
-                            TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ],
                   ],
                 ),
               ),
-              _StatusPill(status: status),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  _StatusPill(status: status),
+                  if (showVerificationStatus) ...[
+                    const SizedBox(height: 6),
+                    _VerificationPill(status: verificationStatus),
+                  ],
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 12),
           if (contactName.isNotEmpty || contactPhone.isNotEmpty)
             Row(
               children: [
-                Icon(Icons.phone_outlined,
-                    size: 16, color: AdminTheme.primaryBlue),
+                Icon(
+                  Icons.phone_outlined,
+                  size: 16,
+                  color: AdminTheme.primaryBlue,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    [contactName, contactPhone]
-                        .where((value) => value.isNotEmpty)
-                        .join(' - '),
+                    [
+                      contactName,
+                      contactPhone,
+                    ].where((value) => value.isNotEmpty).join(' - '),
                     style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
                   ),
                 ),
@@ -171,23 +201,29 @@ class _MissingReportCard extends StatelessWidget {
             ),
           const SizedBox(height: 10),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: status,
-                  items: const [
-                    DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                    DropdownMenuItem(value: 'resolved', child: Text('Resolved')),
-                    DropdownMenuItem(value: 'closed', child: Text('Closed')),
-                  ],
-                  onChanged: id.isEmpty
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: id.isEmpty
                       ? null
-                      : (value) {
-                          if (value != null && onUpdateStatus != null) {
-                            onUpdateStatus!(id, value);
-                          }
+                      : () async {
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => VerificationChatScreen(
+                                reportId: id,
+                                reportName: name,
+                                isAdmin: true,
+                                initialVerificationStatus: verificationStatus,
+                              ),
+                            ),
+                          );
+                          await onRefresh?.call();
                         },
+                  icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                  label: const Text('Verification Chat'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AdminTheme.primaryBlue,
+                  ),
                 ),
               ),
               IconButton(
@@ -217,11 +253,16 @@ class _FoundReportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final id = AdminUtils.safeString(report['id']);
-    final location =
-        AdminUtils.safeString(report['locationFound'], 'Unknown location');
+    final location = AdminUtils.safeString(
+      report['locationFound'],
+      'Unknown location',
+    );
     final gender = AdminUtils.safeString(report['gender'], 'Unknown');
     final age = AdminUtils.formatAge(report['estimatedAge']);
-    final coords = AdminUtils.formatCoords(report['foundLat'], report['foundLng']);
+    final coords = AdminUtils.formatCoords(
+      report['foundLat'],
+      report['foundLng'],
+    );
     final date = AdminUtils.formatDate(report['createdAt']);
     final photo = AdminUtils.safeString(report['photo']);
 
@@ -259,37 +300,49 @@ class _FoundReportCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Age $age - $gender',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                     if (coords.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         coords,
-                        style:
-                            TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ],
                     if (date.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         date,
-                        style:
-                            TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ],
                     if (reporterName.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         'Reported by $reporterName',
-                        style:
-                            TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ],
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.green.shade50,
                   borderRadius: BorderRadius.circular(12),
@@ -343,10 +396,8 @@ class _Avatar extends StatelessWidget {
               child: Image.network(
                 url,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Icon(
-                  Icons.person_outline,
-                  color: Colors.grey.shade500,
-                ),
+                errorBuilder: (_, __, ___) =>
+                    Icon(Icons.person_outline, color: Colors.grey.shade500),
               ),
             )
           : Icon(Icons.person_outline, color: Colors.grey.shade500),
@@ -368,11 +419,36 @@ class _StatusPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        status.toUpperCase(),
+        AdminUtils.statusLabel(status).toUpperCase(),
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w700,
           color: AdminUtils.statusColor(status),
+        ),
+      ),
+    );
+  }
+}
+
+class _VerificationPill extends StatelessWidget {
+  final String status;
+
+  const _VerificationPill({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AdminUtils.verificationStatusColor(status).withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        AdminUtils.verificationStatusLabel(status).toUpperCase(),
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: AdminUtils.verificationStatusColor(status),
         ),
       ),
     );

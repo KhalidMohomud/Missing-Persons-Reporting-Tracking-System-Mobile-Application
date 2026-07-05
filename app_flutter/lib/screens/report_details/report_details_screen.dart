@@ -6,6 +6,7 @@ import 'widgets/report_details_actions.dart';
 import 'widgets/report_details_header.dart';
 import 'widgets/report_details_section.dart';
 import 'widgets/report_tips_section.dart';
+import 'widgets/report_verification_section.dart';
 import '../add_tip_screen.dart';
 
 class ReportDetailsScreen extends StatelessWidget {
@@ -36,6 +37,8 @@ class ReportDetailsScreen extends StatelessWidget {
     final contactName = ReportDetailsUtils.safeString(report['contactName']);
     final contactPhone = ReportDetailsUtils.safeString(report['contactPhone']);
     final reportOwnerId = ReportDetailsUtils.safeString(report['reportedBy']);
+    final verificationStatus =
+        ReportDetailsUtils.safeString(report['verificationStatus'], 'pending');
 
     final displayName = name.isNotEmpty
         ? name
@@ -55,6 +58,7 @@ class ReportDetailsScreen extends StatelessWidget {
       contactName: contactName,
       contactPhone: contactPhone,
       reportOwnerId: reportOwnerId,
+      verificationStatus: verificationStatus,
     );
   }
 
@@ -70,6 +74,8 @@ class ReportDetailsScreen extends StatelessWidget {
               ReportDetailsHeader(data: data),
               const SizedBox(height: 56),
               ReportDetailsSection(data: data),
+              const SizedBox(height: 12),
+              ReportVerificationSection(data: data),
               const SizedBox(height: 20),
               ReportTipsSection(
                 reportId: data.reportId,

@@ -7,19 +7,14 @@ import 'package:http/http.dart' as http;
 import '../api/api.dart';
 import '../screens/report_details/report_details_screen.dart';
 import '../screens/report_details/report_details_utils.dart';
-import 'filter_button.dart';
 import 'report_card.dart';
 
 class LiveReportsSection extends StatefulWidget {
-  final String selectedFilter;
-  final Function(String) onFilterChanged;
   final String searchQuery;
   final int refreshSignal;
 
   const LiveReportsSection({
     super.key,
-    required this.selectedFilter,
-    required this.onFilterChanged,
     this.searchQuery = '',
     this.refreshSignal = 0,
   });
@@ -32,7 +27,6 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
   bool _isLoading = false;
   String? _error;
   List<Map<String, dynamic>> _missing = [];
-  List<Map<String, dynamic>> _found = [];
   Timer? _refreshTimer;
 
   @override
@@ -71,15 +65,9 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
       final missingRes = await http
           .get(Uri.parse(MISSING_REPORTS_URL))
           .timeout(const Duration(seconds: 12));
-      final foundRes = await http
-          .get(Uri.parse(FOUND_REPORTS_URL))
-          .timeout(const Duration(seconds: 12));
 
       if (missingRes.statusCode != 200 && missingRes.statusCode != 404) {
         throw Exception('Missing reports ${missingRes.statusCode}');
-      }
-      if (foundRes.statusCode != 200 && foundRes.statusCode != 404) {
-        throw Exception('Found reports ${foundRes.statusCode}');
       }
 
       List<Map<String, dynamic>> parseList(http.Response res) {
@@ -98,7 +86,6 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
       if (!mounted) return;
       setState(() {
         _missing = parseList(missingRes);
-        _found = parseList(foundRes);
         _error = null;
       });
     } catch (e) {
@@ -117,10 +104,7 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedFilter = widget.selectedFilter;
-    List<Map<String, dynamic>> list = selectedFilter == 'FOUND'
-        ? _found
-        : _missing;
+    List<Map<String, dynamic>> list = _missing;
 
     // Local search by name or city/location
     final query = widget.searchQuery.trim().toLowerCase();
@@ -140,30 +124,9 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header + filter buttons (fixed)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Live Reports',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Row(
-              children: [
-                FilterButton(
-                  label: 'MISSING',
-                  isActive: selectedFilter == 'MISSING',
-                  onTap: () => widget.onFilterChanged('MISSING'),
-                ),
-                const SizedBox(width: 8),
-                FilterButton(
-                  label: 'FOUND',
-                  isActive: selectedFilter == 'FOUND',
-                  onTap: () => widget.onFilterChanged('FOUND'),
-                ),
-              ],
-            ),
-          ],
+        const Text(
+          'Live Reports',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
 
@@ -208,13 +171,15 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
                 );
                 final gender = (report['gender'] ?? 'Unknown').toString();
                 final location =
-                    (report['lastSeenLocation'] ?? report['locationFound'] ?? '')
+                    (report['lastSeenLocation'] ??
+                            report['locationFound'] ??
+                            '')
                         .toString();
                 final date = ReportDetailsUtils.formatDate(
                   report['lastSeenDate'] ?? report['createdAt'],
                 );
-                final imagePath =
-                    (report['photo'] ?? '').toString(); // Cloudinary URL
+                final imagePath = (report['photo'] ?? '')
+                    .toString(); // Cloudinary URL
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12.0),
@@ -230,7 +195,7 @@ class _LiveReportsSectionState extends State<LiveReportsSection> {
                     onTap: () {
                       final details = ReportDetailsScreen.fromReport(
                         report: report,
-                        isMissing: selectedFilter != 'FOUND',
+                        isMissing: true,
                       );
                       Navigator.of(context).push(
                         MaterialPageRoute(

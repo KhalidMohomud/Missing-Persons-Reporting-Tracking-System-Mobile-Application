@@ -238,11 +238,14 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
     // Format phone number (E.164 format)
     final formattedPhone = _formatPhoneNumber(contactPhone);
 
+    final currentUser = UserSession.current.value;
     final reporterId =
-        UserSession.current.value?.id ??
-        UserSession.current.value?.email ??
-        UserSession.current.value?.name ??
+        currentUser?.id ??
+        currentUser?.email ??
+        currentUser?.name ??
         'anonymous';
+    final reporterName = currentUser?.name.trim() ?? '';
+    final reporterEmail = currentUser?.email.trim() ?? '';
 
     final reportPayload = {
       'fullName': fullName,
@@ -256,6 +259,8 @@ class _ReportMissingScreenState extends State<ReportMissingScreen> {
       'description': description,
       'status': 'pending',
       'reportedBy': reporterId,
+      if (reporterName.isNotEmpty) 'reportedByName': reporterName,
+      if (reporterEmail.isNotEmpty) 'reportedByEmail': reporterEmail,
     };
 
     setState(() => _isSubmitting = true);

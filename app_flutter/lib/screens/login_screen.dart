@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../api/api.dart';
 import '../routes/app_routes.dart';
 import '../session/user_session.dart';
+import '../services/push_notification_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -71,6 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
           data: data,
           tokenOverride: tokenFromHeaders ?? tokenFromBody,
         );
+        await PushNotificationService.instance.syncForLoggedInUser();
         // Handle successful login
         if (mounted) {
           // Show success alert and navigate after dismissal
@@ -129,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
           data: data,
           tokenOverride: tokenFromHeaders ?? tokenFromBody,
         );
+        await PushNotificationService.instance.syncForLoggedInUser();
         if (mounted) {
           await _showSuccessAlert(context);
         }

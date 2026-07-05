@@ -1,6 +1,7 @@
 import { db } from "../firebase/admin.js";
 import admin from "firebase-admin";
-import { isAdminRequest, resolveRequestIdentity } from "./access.js";
+import { isAdminRequest, resolveRequestIdentity, resolveReportById } from "./access.js";
+import { notifyNearbyAlert } from "../services/push_notifications.js";
 
 const alertsRef = db.collection("alerts");
 
@@ -20,6 +21,49 @@ const normalizeAudience = (value) => {
     if (cleaned === "public") return "public";
     if (cleaned === "owner_admin") return "owner_admin";
     return null;
+};
+
+const buildReportSummary = (reportInfo) => {
+    if (!reportInfo?.report) return null;
+
+    const report = reportInfo.report;
+    if (reportInfo.type === "missing") {
+        return {
+            type: "missing",
+            title: report.fullName || "Missing person",
+            locationLabel: report.lastSeenLocation || "Unknown location",
+            photo: report.photo || "",
+            age: report.age ?? null,
+            gender: report.gender || "",
+            dateLabel: report.lastSeenDate || "",
+            report,
+        };
+    }
+
+    return {
+        type: "found",
+        title: "Found person",
+        locationLabel: report.locationFound || "Unknown location",
+        photo: report.photo || "",
+        age: report.estimatedAge ?? null,
+        gender: report.gender || "",
+        dateLabel: report.createdAt || "",
+        report,
+    };
+};
+
+const enrichAlert = async (alert) => {
+    const reportInfo = await resolveReportById(alert.reportId, alert.reportType);
+    const reportSummary = buildReportSummary(reportInfo);
+    return {
+        ...alert,
+        reportSummary,
+    };
+};
+
+const enrichAlerts = async (alerts) => {
+    if (!alerts.length) return alerts;
+    return Promise.all(alerts.map((alert) => enrichAlert(alert)));
 };
 
 export const createAlert = async (req, res) => {
@@ -73,6 +117,21 @@ export const createAlert = async (req, res) => {
         };
 
         const created = await alertsRef.add(payload);
+
+        if (payload.audience === "public") {
+            try {
+                await notifyNearbyAlert({
+                    reportId: payload.reportId,
+                    reportType: payload.reportType,
+                    alertMessage: payload.alertMessage,
+                    alertLat: payload.alertLat,
+                    alertLng: payload.alertLng,
+                    radiusKm: payload.radiusKm,
+                });
+            } catch (pushErr) {
+                console.error("Nearby alert push error:", pushErr);
+            }
+        }
 
         return res.status(201).json({
             success: true,
@@ -148,6 +207,8 @@ export const getAlerts = async (req, res) => {
         if (alerts.length > 1) {
             alerts.sort((a, b) => toMillis(b.sentAt) - toMillis(a.sentAt));
         }
+
+        alerts = await enrichAlerts(alerts);
 
         return res.status(200).json({ success: true, count: alerts.length, data: alerts });
     } catch (err) {

@@ -3,6 +3,14 @@ import { db } from "../firebase/admin.js";
 import admin from "firebase-admin";
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
+import { notifyReportStatusChanged } from "../services/push_notifications.js";
+import {
+    reporterEmailFromPayload,
+    reporterNameFromPayload,
+    resolveReporterName,
+    withReporterName,
+    withReporterNames,
+} from "../services/report_reporters.js";
 
 dotenv.config();
 
@@ -11,6 +19,23 @@ const missingReportsRef = db.collection("missingReports");
 const normalizePhone = (phone) => String(phone || "").trim();
 const isDataUrl = (value) => /^data:image\/[a-zA-Z]+;base64,/.test(value || "");
 const isHttpUrl = (value) => /^https?:\/\//i.test(value || "");
+const terminalVerificationStatuses = new Set(["verified", "rejected"]);
+
+const normalizeReportStatus = (value) => {
+    const status = String(value || "").trim().toLowerCase();
+    if (["pending", "resolved", "closed"].includes(status)) return status;
+    return "";
+};
+
+const verificationStatusForReportStatus = (reportStatus, currentVerificationStatus) => {
+    const current = String(currentVerificationStatus || "pending").trim().toLowerCase();
+    if (reportStatus === "resolved") return "verified";
+    if (reportStatus === "closed") {
+        return current === "verified" ? "verified" : "rejected";
+    }
+    if (terminalVerificationStatuses.has(current)) return current;
+    return current || "pending";
+};
 
 /**
  * CREATE a missing report
@@ -18,6 +43,11 @@ const isHttpUrl = (value) => /^https?:\/\//i.test(value || "");
 export const createMissingReport = async (req, res) => {
     try {
         const reporterId = req.auth?.userId || req.body?.reportedBy || 'anonymous';
+        const reporterName = await resolveReporterName(
+            reporterId,
+            reporterNameFromPayload(req.body),
+        );
+        const reporterEmail = reporterEmailFromPayload(req.body);
 
         const {
             fullName,
@@ -92,6 +122,7 @@ export const createMissingReport = async (req, res) => {
             return res.status(400).json({ error: "Photo is required (data URL or image URL)" });
         }
 
+        const initialStatus = normalizeReportStatus(status) || "pending";
         const reportPayload = {
             fullName: String(fullName).trim(),
             age: parsedAge,
@@ -102,8 +133,12 @@ export const createMissingReport = async (req, res) => {
             contactName: String(contactName).trim(),
             contactPhone: finalPhone,
             description: description ? String(description).trim() : "",
-            status: status ? String(status).trim() : "pending",
+            status: initialStatus,
+            verificationStatus: verificationStatusForReportStatus(initialStatus, "pending"),
+            verificationNote: "",
             reportedBy: reporterId,
+            ...(reporterName ? { reportedByName: reporterName } : {}),
+            ...(reporterEmail ? { reportedByEmail: reporterEmail } : {}),
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         };
 
@@ -130,7 +165,9 @@ export const getMissingReports = async (req, res) => {
             return res.status(404).json({ error: "No missing reports found" });
         }
 
-        const reports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const reports = await withReporterNames(
+            snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })),
+        );
         return res.status(200).json({ success: true, count: reports.length, data: reports });
     } catch (err) {
         console.error("Get missing reports error:", err);
@@ -148,7 +185,8 @@ export const getMissingReportById = async (req, res) => {
         if (!doc.exists) {
             return res.status(404).json({ error: "Report not found" });
         }
-        return res.status(200).json({ success: true, data: { id: doc.id, ...doc.data() } });
+        const report = await withReporterName({ id: doc.id, ...doc.data() });
+        return res.status(200).json({ success: true, data: report });
     } catch (err) {
         console.error("Get report by ID error:", err);
         return res.status(500).json({ error: "Failed to fetch report" });
@@ -167,6 +205,23 @@ export const updateMissingReport = async (req, res) => {
         const doc = await docRef.get();
         if (!doc.exists) {
             return res.status(404).json({ error: "Report not found" });
+        }
+
+        const previousData = doc.data() || {};
+        const previousStatus = previousData.status;
+
+        if (Object.hasOwn(updateData, "status")) {
+            const nextStatus = normalizeReportStatus(updateData.status);
+            if (!nextStatus) {
+                return res.status(400).json({ error: "Invalid status" });
+            }
+            updateData.status = nextStatus;
+            if (!Object.hasOwn(updateData, "verificationStatus")) {
+                updateData.verificationStatus = verificationStatusForReportStatus(
+                    nextStatus,
+                    previousData.verificationStatus,
+                );
+            }
         }
 
         // If photo is updated, upload to Cloudinary
@@ -188,7 +243,26 @@ export const updateMissingReport = async (req, res) => {
         await docRef.update(updateData);
 
         const updatedDoc = await docRef.get();
-        return res.status(200).json({ success: true, data: { id: updatedDoc.id, ...updatedDoc.data() } });
+        const updatedData = updatedDoc.data() || {};
+
+        if (
+            updateData.status &&
+            String(updateData.status).trim() !== String(previousStatus || "").trim()
+        ) {
+            try {
+                await notifyReportStatusChanged({
+                    reportId: id,
+                    reportName: updatedData.fullName || previousData.fullName,
+                    ownerId: updatedData.reportedBy || previousData.reportedBy,
+                    newStatus: String(updateData.status).trim(),
+                });
+            } catch (pushErr) {
+                console.error("Report status push error:", pushErr);
+            }
+        }
+
+        const report = await withReporterName({ id: updatedDoc.id, ...updatedData });
+        return res.status(200).json({ success: true, data: report });
     } catch (err) {
         console.error("Update report error:", err);
         return res.status(500).json({ error: "Failed to update report" });

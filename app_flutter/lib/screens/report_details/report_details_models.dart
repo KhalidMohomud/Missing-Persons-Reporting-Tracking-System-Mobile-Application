@@ -11,6 +11,7 @@ class ReportDetailsData {
   final String contactName;
   final String contactPhone;
   final String reportOwnerId;
+  final String verificationStatus;
 
   const ReportDetailsData({
     required this.isMissing,
@@ -25,5 +26,6 @@ class ReportDetailsData {
     required this.contactName,
     required this.contactPhone,
     required this.reportOwnerId,
+    this.verificationStatus = 'pending',
   });
 }

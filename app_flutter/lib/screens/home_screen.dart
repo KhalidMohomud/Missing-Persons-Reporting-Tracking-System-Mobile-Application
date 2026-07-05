@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../routes/app_routes.dart';
 import '../session/user_session.dart';
+import '../services/push_notification_service.dart';
 import '../widgets/home_header.dart';
 import '../widgets/search_section.dart';
 import '../widgets/live_reports_section.dart';
@@ -17,9 +18,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final Color primaryBlue = const Color(0xFF2F89B8);
   final Color goldColor = const Color(0xFFD4AF37);
-  String _selectedFilter = 'MISSING';
   String _searchQuery = '';
   int _refreshSignal = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    PushNotificationService.instance.syncForLoggedInUser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,14 +82,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: LiveReportsSection(
-                  selectedFilter: _selectedFilter,
                   searchQuery: _searchQuery,
                   refreshSignal: _refreshSignal,
-                  onFilterChanged: (filter) {
-                    setState(() {
-                      _selectedFilter = filter;
-                    });
-                  },
                 ),
               ),
             ),

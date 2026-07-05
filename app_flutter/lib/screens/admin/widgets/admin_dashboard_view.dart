@@ -6,6 +6,7 @@ import '../admin_utils.dart';
 
 class AdminDashboardView extends StatelessWidget {
   final MonthlyData monthly;
+  final YearlyData yearly;
   final String? error;
   final VoidCallback onViewAllMissing;
   final VoidCallback onViewAllFound;
@@ -15,6 +16,7 @@ class AdminDashboardView extends StatelessWidget {
   const AdminDashboardView({
     super.key,
     required this.monthly,
+    required this.yearly,
     required this.error,
     required this.onViewAllMissing,
     required this.onViewAllFound,
@@ -34,6 +36,8 @@ class AdminDashboardView extends StatelessWidget {
           const SizedBox(height: 12),
         ],
         _MonthlyHeader(monthly: monthly),
+        const SizedBox(height: 16),
+        _YearlyOverview(yearly: yearly),
         const SizedBox(height: 16),
         Wrap(
           spacing: 12,
@@ -63,23 +67,172 @@ class AdminDashboardView extends StatelessWidget {
         _QuickActionCard(onSendAlert: onSendAlert),
         const SizedBox(height: 18),
         _MonthlySection(
-          title: 'Missing Reports (Last Month)',
+          title: 'Missing Reports (This Month)',
           items: monthly.missing,
           isMissing: true,
-          emptyText: 'No missing reports last month.',
+          emptyText: 'No missing reports this month.',
           reporterNameFor: reporterNameFor,
           onViewAll: onViewAllMissing,
         ),
         const SizedBox(height: 12),
         _MonthlySection(
-          title: 'Found Reports (Last Month)',
+          title: 'Found Reports (This Month)',
           items: monthly.found,
           isMissing: false,
-          emptyText: 'No found reports last month.',
+          emptyText: 'No found reports this month.',
           reporterNameFor: reporterNameFor,
           onViewAll: onViewAllFound,
         ),
       ],
+    );
+  }
+}
+
+class _YearlyOverview extends StatelessWidget {
+  final YearlyData yearly;
+
+  const _YearlyOverview({required this.yearly});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AdminTheme.accentGold.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.calendar_today_outlined,
+                  color: Colors.orange.shade700,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Yearly Overview',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      yearly.rangeText.isNotEmpty
+                          ? '${yearly.label} - ${yearly.rangeText}'
+                          : yearly.label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '${yearly.totalCount} total',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AdminTheme.deepBlue,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _YearlyMetric(
+                  label: 'Missing',
+                  value: yearly.missingCount.toString(),
+                  color: AdminTheme.primaryBlue,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _YearlyMetric(
+                  label: 'Found',
+                  value: yearly.foundCount.toString(),
+                  color: Colors.green.shade600,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _YearlyMetric(
+                  label: 'Total',
+                  value: yearly.totalCount.toString(),
+                  color: AdminTheme.accentGold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _YearlyMetric extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _YearlyMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -102,7 +255,7 @@ class _MonthlyHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AdminTheme.primaryBlue.withOpacity(0.25),
+            color: AdminTheme.primaryBlue.withValues(alpha: 0.25),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
@@ -113,7 +266,7 @@ class _MonthlyHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
@@ -131,7 +284,7 @@ class _MonthlyHeader extends StatelessWidget {
                   'Monthly Overview',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.white.withOpacity(0.85),
+                    color: Colors.white.withValues(alpha: 0.85),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -149,7 +302,7 @@ class _MonthlyHeader extends StatelessWidget {
                     monthly.rangeText,
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.white.withOpacity(0.75),
+                      color: Colors.white.withValues(alpha: 0.75),
                     ),
                   ),
                 ],
@@ -200,7 +353,7 @@ class _SummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -212,7 +365,7 @@ class _SummaryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -251,7 +404,7 @@ class _QuickActionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: AdminTheme.primaryBlue.withOpacity(0.25),
+            color: AdminTheme.primaryBlue.withValues(alpha: 0.25),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -262,7 +415,7 @@ class _QuickActionCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -288,7 +441,7 @@ class _QuickActionCard extends StatelessWidget {
                   'Notify the public with a pinned location and message.',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.white.withOpacity(0.85),
+                    color: Colors.white.withValues(alpha: 0.85),
                   ),
                 ),
               ],
@@ -342,7 +495,7 @@ class _MonthlySection extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -361,10 +514,7 @@ class _MonthlySection extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              TextButton(
-                onPressed: onViewAll,
-                child: const Text('View all'),
-              ),
+              TextButton(onPressed: onViewAll, child: const Text('View all')),
             ],
           ),
           if (items.isEmpty)
@@ -376,7 +526,9 @@ class _MonthlySection extends StatelessWidget {
               ),
             )
           else
-            ...items.take(3).map(
+            ...items
+                .take(3)
+                .map(
                   (report) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: _MiniReportRow(
@@ -411,7 +563,7 @@ class _MiniReportRow extends StatelessWidget {
     final subtitle = isMissing
         ? AdminUtils.safeString(report['lastSeenLocation'], 'Unknown location')
         : 'Age ${AdminUtils.formatAge(report['estimatedAge'])} - '
-            '${AdminUtils.safeString(report['gender'], 'Unknown')}';
+              '${AdminUtils.safeString(report['gender'], 'Unknown')}';
     final meta = isMissing
         ? AdminUtils.safeString(report['lastSeenDate'])
         : AdminUtils.formatDate(report['createdAt']);
@@ -462,11 +614,11 @@ class _MiniReportRow extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: AdminUtils.statusColor(status).withOpacity(0.12),
+              color: AdminUtils.statusColor(status).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              status.toUpperCase(),
+              AdminUtils.statusLabel(status).toUpperCase(),
               style: TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.w700,
@@ -499,10 +651,8 @@ class _Avatar extends StatelessWidget {
               child: Image.network(
                 url,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Icon(
-                  Icons.person_outline,
-                  color: Colors.grey.shade500,
-                ),
+                errorBuilder: (context, error, stackTrace) =>
+                    Icon(Icons.person_outline, color: Colors.grey.shade500),
               ),
             )
           : Icon(Icons.person_outline, color: Colors.grey.shade500, size: 20),

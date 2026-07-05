@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../session/user_session.dart';
 import '../routes/app_routes.dart';
+import '../services/push_notification_service.dart';
 
 Future<void> showLogoutConfirmDialog(BuildContext context) async {
   return showDialog(
@@ -18,10 +19,13 @@ Future<void> showLogoutConfirmDialog(BuildContext context) async {
             child: const Text('Close'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
+              await PushNotificationService.instance.clearForLogout();
               UserSession.clear();
-              Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+              if (context.mounted) {
+                Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+              }
             },
             child: Text('Logout', style: TextStyle(color: Colors.red)),
           ),

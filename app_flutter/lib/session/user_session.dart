@@ -67,8 +67,12 @@ class UserSession {
         tokenOverride ??
         _extractToken(data) ??
         _firstString(userMap, ['token', 'accessToken', 'access_token', 'jwt']);
-    final photoUrl =
-        _firstString(userMap, ['photoUrl', 'photo', 'avatar', 'image']);
+    final photoUrl = _firstString(userMap, [
+      'photoUrl',
+      'photo',
+      'avatar',
+      'image',
+    ]);
     final phone = _firstString(userMap, ['phone', 'phoneNumber']);
 
     setUser(

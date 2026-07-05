@@ -26,6 +26,12 @@
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photos to upload a clear photo.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We use your location to send nearby missing person alerts.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

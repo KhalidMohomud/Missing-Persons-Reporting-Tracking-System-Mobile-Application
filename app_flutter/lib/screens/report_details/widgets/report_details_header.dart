@@ -168,13 +168,17 @@ class _InfoCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              data.statusLabel,
+              data.isMissing && data.verificationStatus == 'verified'
+                  ? 'VERIFIED'
+                  : data.statusLabel,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: data.isMissing
-                    ? ReportDetailsTheme.accentGold
-                    : Colors.green.shade700,
+                color: data.isMissing && data.verificationStatus == 'verified'
+                    ? Colors.green.shade700
+                    : data.isMissing
+                        ? ReportDetailsTheme.accentGold
+                        : Colors.green.shade700,
               ),
             ),
           ),

@@ -239,7 +239,10 @@ export const createNewUser = async (req, res) => {
         const { email, fullName, password, phone, role } = req.body;
 
         if (!email || !password || !fullName) {
-            return res.status(400).json({ error: "Missing required fields" });
+            return res.status(400).json({
+                message: "Missing required fields",
+                error: "Missing required fields",
+            });
         }
 
         const createUserPayload = {
@@ -255,7 +258,8 @@ export const createNewUser = async (req, res) => {
             const e164 = /^\+[1-9]\d{1,14}$/;
             if (!e164.test(phone)) {
                 return res.status(400).json({
-                    error: "Phone number must be in E.164 format (e.g. +252619006007)."
+                    message: "Phone number must be in E.164 format (e.g. +252619006007).",
+                    error: "Phone number must be in E.164 format (e.g. +252619006007).",
                 });
             }
             createUserPayload.phoneNumber = [phone];
@@ -296,7 +300,7 @@ export const createNewUser = async (req, res) => {
         console.error(err);
         const status = err?.status || 500;
         const message = err?.errors?.[0]?.longMessage || err?.message || "Failed to create user";
-        return res.status(status).json({ error: message });
+        return res.status(status).json({ message, error: message });
     }
 };
 

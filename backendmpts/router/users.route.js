@@ -11,6 +11,11 @@ import {
     updateUser,
     deleteUser,
 } from "../controller/users.js";
+import {
+    registerFcmToken,
+    removeFcmToken,
+    updateUserLocation,
+} from "../controller/push.js";
 import { requireAuth } from "@clerk/express";
 
 
@@ -26,5 +31,8 @@ router.post("/user/signup", createNewUser);
 router.post("/user/signin", signInUser);
 router.post("/user/forgot-password", forgotPassword);
 router.post("/user/reset-password", resetPassword);
+router.post("/user/fcm-token", registerFcmToken);
+router.delete("/user/fcm-token", removeFcmToken);
+router.post("/user/location", updateUserLocation);
 
 export default router;

@@ -7,6 +7,7 @@ import {
     resolveReportById,
     resolveRequestIdentity,
 } from "./access.js";
+import { notifyNewTip } from "../services/push_notifications.js";
 
 const tipsRef = db.collection("tips");
 const alertsRef = db.collection("alerts");
@@ -122,6 +123,18 @@ export const createTip = async (req, res) => {
             }
         } catch (err) {
             console.error("Create tip alert error:", err);
+        }
+
+        try {
+            await notifyNewTip({
+                reportId: payload.reportId,
+                reportType: reportInfo.type,
+                ownerId,
+                message: payload.message,
+                location: payload.location,
+            });
+        } catch (pushErr) {
+            console.error("New tip push error:", pushErr);
         }
 
         return res.status(201).json({
