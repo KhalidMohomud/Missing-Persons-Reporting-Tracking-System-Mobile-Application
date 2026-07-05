@@ -118,25 +118,43 @@ export const createAlert = async (req, res) => {
 
         const created = await alertsRef.add(payload);
 
+        let pushDelivery = null;
         if (payload.audience === "public") {
             try {
-                await notifyNearbyAlert({
+                const identity = resolveRequestIdentity(req);
+                pushDelivery = await notifyNearbyAlert({
+                    alertId: created.id,
                     reportId: payload.reportId,
                     reportType: payload.reportType,
                     alertMessage: payload.alertMessage,
                     alertLat: payload.alertLat,
                     alertLng: payload.alertLng,
                     radiusKm: payload.radiusKm,
+                    excludeUserIds: [identity.userId, identity.email],
+                });
+                await created.update({
+                    pushDelivery,
+                    pushSentAt: admin.firestore.FieldValue.serverTimestamp(),
                 });
             } catch (pushErr) {
                 console.error("Nearby alert push error:", pushErr);
+                pushDelivery = {
+                    successCount: 0,
+                    failureCount: 1,
+                    skipped: false,
+                    error: pushErr?.message || "Push failed",
+                };
+                await created.update({
+                    pushDelivery,
+                    pushFailedAt: admin.firestore.FieldValue.serverTimestamp(),
+                });
             }
         }
 
         return res.status(201).json({
             success: true,
             alertId: created.id,
-            data: { id: created.id, ...payload },
+            data: { id: created.id, ...payload, pushDelivery },
         });
     } catch (err) {
         console.error("Create alert error:", err);

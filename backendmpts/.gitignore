@@ -2,3 +2,4 @@
 .env
 *firebase-adminsdk*.json
 .mpts.json
+mpts.json

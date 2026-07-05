@@ -53,9 +53,9 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
 
       final role = UserSession.current.value?.role.toLowerCase() ?? 'public';
       if (role != 'admin') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Admin kaliya.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Admin kaliya.')));
         Navigator.of(context).pop();
       }
     });
@@ -211,8 +211,21 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
       if (!mounted) return;
 
       if (response.statusCode == 201) {
+        final decoded = jsonDecode(response.body);
+        final data = decoded is Map<String, dynamic> ? decoded['data'] : null;
+        final dataMap = data is Map ? Map<String, dynamic>.from(data) : null;
+        final pushDelivery = dataMap?['pushDelivery'];
+        final pushMap = pushDelivery is Map
+            ? Map<String, dynamic>.from(pushDelivery)
+            : null;
+        final successCount = _toInt(pushMap?['successCount']);
+        final targetCount = _toInt(pushMap?['targetCount']);
+        final deliveryText = targetCount > 0
+            ? ' Push: $successCount/$targetCount devices.'
+            : ' Push: no registered devices yet.';
+
         ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Digniinta waa la diray.')),
+          SnackBar(content: Text('Digniinta waa la diray.$deliveryText')),
         );
         Navigator.of(context).pop(true);
       } else {
@@ -222,14 +235,21 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Khalad shabakad: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Khalad shabakad: $e')));
     } finally {
       if (mounted) {
         setState(() => _isSubmitting = false);
       }
     }
+  }
+
+  int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.round();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
   }
 
   @override
@@ -310,22 +330,24 @@ class _AddAlertScreenState extends State<AddAlertScreen> {
               DropdownButtonFormField<String>(
                 isExpanded: true,
                 value: _selectedReportId,
-                items: (_reportType == 'found'
-                        ? _foundReports
-                        : _missingReports)
-                    .map(
-                      (report) => DropdownMenuItem(
-                        value: _safeString(report['id']),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: Text(
-                            _labelForReport(report, _reportType == 'missing'),
-                            overflow: TextOverflow.ellipsis,
+                items:
+                    (_reportType == 'found' ? _foundReports : _missingReports)
+                        .map(
+                          (report) => DropdownMenuItem(
+                            value: _safeString(report['id']),
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: Text(
+                                _labelForReport(
+                                  report,
+                                  _reportType == 'missing',
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    )
-                    .toList(),
+                        )
+                        .toList(),
                 onChanged: (value) {
                   setState(() => _selectedReportId = value);
                 },

@@ -107,6 +107,31 @@ export const getNearbyUserPushTokens = async (lat, lng, radiusKm, excludeUserIds
     return normalizeTokens(tokens);
 };
 
+export const getAllUserPushTokens = async (excludeUserIds = []) => {
+    const excluded = new Set(
+        excludeUserIds
+            .map((value) => String(value || "").trim().toLowerCase())
+            .filter(Boolean)
+    );
+
+    const snapshot = await usersRef.get();
+    if (snapshot.empty) return [];
+
+    const tokens = [];
+    snapshot.docs.forEach((doc) => {
+        const data = doc.data() || {};
+        const docId = doc.id.toLowerCase();
+        const email = String(data.email || "").trim().toLowerCase();
+        if (excluded.has(docId) || (email && excluded.has(email))) return;
+
+        if (Array.isArray(data.fcmTokens)) {
+            tokens.push(...data.fcmTokens);
+        }
+    });
+
+    return normalizeTokens(tokens);
+};
+
 export const sendPushNotification = async ({
     tokens = [],
     title,
@@ -255,24 +280,46 @@ export const notifyVerificationDecision = async ({
 };
 
 export const notifyNearbyAlert = async ({
+    alertId,
     reportId,
     reportType,
     alertMessage,
     alertLat,
     alertLng,
     radiusKm,
+    excludeUserIds = [],
 }) => {
-    const tokens = await getNearbyUserPushTokens(alertLat, alertLng, radiusKm);
-    return sendPushNotification({
+    const nearbyTokens = await getNearbyUserPushTokens(
+        alertLat,
+        alertLng,
+        radiusKm,
+        excludeUserIds,
+    );
+    const allTokens = nearbyTokens.length > 0
+        ? []
+        : await getAllUserPushTokens(excludeUserIds);
+    const tokens = nearbyTokens.length > 0 ? nearbyTokens : allTokens;
+    const deliveryMode = nearbyTokens.length > 0 ? "nearby" : "all_registered_fallback";
+
+    const result = await sendPushNotification({
         tokens,
-        title: "Missing person alert nearby",
+        title: reportType === "found" ? "Found person alert" : "Missing person alert",
         body: alertMessage || "A missing person alert was sent near your area.",
         data: {
             type: "nearby_alert",
+            alertId: alertId || "",
             reportId: reportId || "",
             reportType: reportType || "missing",
+            deliveryMode,
         },
     });
+
+    return {
+        ...result,
+        targetCount: tokens.length,
+        deliveryMode,
+        nearbyTargetCount: nearbyTokens.length,
+    };
 };
 
 export const notifyReportStatusChanged = async ({
