@@ -6,29 +6,29 @@ Baafiye is a smart and community-focused mobile application designed to help peo
 
 Below are some of the key screens from the Baafiye mobile application:
 
-![Splash screen](img/WhatsApp%20Image%202026-07-07%20at%2020.42.27.jpeg)
+<p align="center">
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.42.27.jpeg" alt="Splash screen" width="220" />
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.44.50.jpeg" alt="Welcome and home screen" width="220" />
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.45.42.jpeg" alt="Report missing person screen" width="220" />
+</p>
 
-![Welcome and home screen](img/WhatsApp%20Image%202026-07-07%20at%2020.44.50.jpeg)
+<p align="center">
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.46.29.jpeg" alt="Report found person screen" width="220" />
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.47.14.jpeg" alt="Alerts and notifications" width="220" />
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.48.05.jpeg" alt="My reports and profile" width="220" />
+</p>
 
-![Report missing person screen](img/WhatsApp%20Image%202026-07-07%20at%2020.45.42.jpeg)
+<p align="center">
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.50.22.jpeg" alt="Admin and verification view" width="220" />
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.51.21.jpeg" alt="Additional app interface" width="220" />
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.51.53.jpeg" alt="More app interface" width="220" />
+</p>
 
-![Report found person screen](img/WhatsApp%20Image%202026-07-07%20at%2020.46.29.jpeg)
-
-![Alerts and notifications](img/WhatsApp%20Image%202026-07-07%20at%2020.47.14.jpeg)
-
-![My reports and profile](img/WhatsApp%20Image%202026-07-07%20at%2020.48.05.jpeg)
-
-![Admin and verification view](img/WhatsApp%20Image%202026-07-07%20at%2020.50.22.jpeg)
-
-![Additional app interface](img/WhatsApp%20Image%202026-07-07%20at%2020.51.21.jpeg)
-
-![More app interface](img/WhatsApp%20Image%202026-07-07%20at%2020.51.53.jpeg)
-
-![Additional reporting screen](img/WhatsApp%20Image%202026-07-07%20at%2020.52.26.jpeg)
-
-![More app experience](img/WhatsApp%20Image%202026-07-07%20at%2020.53.11.jpeg)
-
-![Final app view](img/WhatsApp%20Image%202026-07-07%20at%2020.53.52.jpeg)
+<p align="center">
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.52.26.jpeg" alt="Additional reporting screen" width="220" />
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.53.11.jpeg" alt="More app experience" width="220" />
+  <img src="img/WhatsApp%20Image%202026-07-07%20at%2020.53.52.jpeg" alt="Final app view" width="220" />
+</p>
 
 ## Overview
 
