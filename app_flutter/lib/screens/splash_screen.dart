@@ -101,8 +101,6 @@ class SplashScreen extends StatelessWidget {
                       shadowColor: primaryBlue.withOpacity(0.35),
                     ),
                     onPressed: () {
-                      // TODO: Navigate to login or home screen
-                      Navigator.of(context).pop();
                       Navigator.of(
                         context,
                       ).pushReplacementNamed(AppRoutes.home);

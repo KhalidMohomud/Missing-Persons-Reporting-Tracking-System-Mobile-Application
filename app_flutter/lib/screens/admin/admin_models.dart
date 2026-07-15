@@ -1,4 +1,4 @@
-enum AdminTab { dashboard, missing, found, tips, users }
+enum AdminTab { dashboard, reports, missing, found, tips, users }
 
 class MonthlyData {
   final String label;

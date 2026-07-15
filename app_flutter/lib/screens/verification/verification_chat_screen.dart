@@ -76,6 +76,8 @@ class _VerificationChatScreenState extends State<VerificationChatScreen> {
   }
 
   Future<void> _loadMessages() async {
+    if (!mounted) return;
+
     setState(() {
       _isLoading = true;
       _error = null;
@@ -137,7 +139,7 @@ class _VerificationChatScreenState extends State<VerificationChatScreen> {
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_scrollController.hasClients) return;
+      if (!mounted || !_scrollController.hasClients) return;
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 250),
@@ -193,8 +195,11 @@ class _VerificationChatScreenState extends State<VerificationChatScreen> {
       imageQuality: 85,
     );
     if (picked == null) return;
+    if (!mounted) return;
 
     final bytes = await picked.readAsBytes();
+    if (!mounted) return;
+
     final photoBase64 = base64Encode(bytes);
     final photoDataUrl = 'data:image/jpeg;base64,$photoBase64';
     await _sendMessage(imageDataUrl: photoDataUrl);
@@ -215,6 +220,7 @@ class _VerificationChatScreenState extends State<VerificationChatScreen> {
 
       if (response.statusCode == 201) {
         await _loadMessages();
+        if (!mounted) return;
         _showSnack('Evidence request sent');
       } else {
         final decoded = jsonDecode(response.body);
@@ -239,6 +245,7 @@ class _VerificationChatScreenState extends State<VerificationChatScreen> {
       confirmLabel: 'Verify',
     );
     if (note == null) return;
+    if (!mounted) return;
 
     setState(() => _isActionLoading = true);
     try {
@@ -254,6 +261,7 @@ class _VerificationChatScreenState extends State<VerificationChatScreen> {
 
       if (response.statusCode == 200) {
         await _loadMessages();
+        if (!mounted) return;
         _showSnack('Report verified');
       } else {
         final decoded = jsonDecode(response.body);
@@ -279,6 +287,7 @@ class _VerificationChatScreenState extends State<VerificationChatScreen> {
       required: true,
     );
     if (reason == null || reason.trim().isEmpty) return;
+    if (!mounted) return;
 
     setState(() => _isActionLoading = true);
     try {
@@ -294,6 +303,7 @@ class _VerificationChatScreenState extends State<VerificationChatScreen> {
 
       if (response.statusCode == 200) {
         await _loadMessages();
+        if (!mounted) return;
         _showSnack('Report rejected');
       } else {
         final decoded = jsonDecode(response.body);
@@ -317,40 +327,18 @@ class _VerificationChatScreenState extends State<VerificationChatScreen> {
     required String confirmLabel,
     bool required = false,
   }) async {
-    final controller = TextEditingController();
-    final result = await showDialog<String>(
+    return showDialog<String>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text(title),
-          content: TextField(
-            controller: controller,
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: hint,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final value = controller.text.trim();
-                if (required && value.isEmpty) return;
-                Navigator.of(context).pop(value);
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: _primaryBlue),
-              child: Text(confirmLabel),
-            ),
-          ],
+        return _VerificationTextDialog(
+          title: title,
+          hint: hint,
+          confirmLabel: confirmLabel,
+          isRequired: required,
+          primaryColor: _primaryBlue,
         );
       },
     );
-    controller.dispose();
-    return result;
   }
 
   void _showSnack(String message) {
@@ -598,6 +586,66 @@ class _VerificationChatScreenState extends State<VerificationChatScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _VerificationTextDialog extends StatefulWidget {
+  final String title;
+  final String hint;
+  final String confirmLabel;
+  final bool isRequired;
+  final Color primaryColor;
+
+  const _VerificationTextDialog({
+    required this.title,
+    required this.hint,
+    required this.confirmLabel,
+    required this.isRequired,
+    required this.primaryColor,
+  });
+
+  @override
+  State<_VerificationTextDialog> createState() =>
+      _VerificationTextDialogState();
+}
+
+class _VerificationTextDialogState extends State<_VerificationTextDialog> {
+  final _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        maxLines: 3,
+        decoration: InputDecoration(
+          hintText: widget.hint,
+          border: const OutlineInputBorder(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            final value = _controller.text.trim();
+            if (widget.isRequired && value.isEmpty) return;
+            Navigator.of(context).pop(value);
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: widget.primaryColor),
+          child: Text(widget.confirmLabel),
+        ),
+      ],
     );
   }
 }

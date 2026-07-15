@@ -11,6 +11,7 @@ import 'admin_theme.dart';
 import 'admin_utils.dart';
 import 'widgets/admin_dashboard_view.dart';
 import 'widgets/admin_nav_bar.dart';
+import 'widgets/admin_report_table_view.dart';
 import 'widgets/admin_reports_view.dart';
 import 'widgets/admin_tips_view.dart';
 import 'widgets/admin_user_management_view.dart';
@@ -612,6 +613,13 @@ class _AdminScreenState extends State<AdminScreen> {
           onSendAlert: () {
             Navigator.of(context).pushNamed(AppRoutes.addAlert);
           },
+          reporterNameFor: _reporterNameFor,
+        );
+      case AdminTab.reports:
+        return AdminReportTableView(
+          missingReports: _missingReports,
+          foundReports: _foundReports,
+          error: _error,
           reporterNameFor: _reporterNameFor,
         );
       case AdminTab.missing:

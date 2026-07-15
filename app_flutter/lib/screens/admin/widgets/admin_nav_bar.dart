@@ -42,6 +42,15 @@ class AdminNavBar extends StatelessWidget {
           ),
           Expanded(
             child: _NavItem(
+              tab: AdminTab.reports,
+              label: 'Reports',
+              icon: Icons.table_chart_outlined,
+              isActive: activeTab == AdminTab.reports,
+              onTap: onTabChanged,
+            ),
+          ),
+          Expanded(
+            child: _NavItem(
               tab: AdminTab.missing,
               label: 'Missing',
               icon: Icons.person_search_outlined,
@@ -101,8 +110,8 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => onTap(tab),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           gradient: isActive

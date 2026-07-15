@@ -166,16 +166,6 @@ class _MissingReportCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _StatusPill(status: status),
-                  if (showVerificationStatus) ...[
-                    const SizedBox(height: 6),
-                    _VerificationPill(status: verificationStatus),
-                  ],
-                ],
-              ),
             ],
           ),
           const SizedBox(height: 12),

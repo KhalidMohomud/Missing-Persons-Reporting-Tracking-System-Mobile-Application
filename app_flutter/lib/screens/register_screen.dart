@@ -43,6 +43,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _successMessage = null;
     });
 
+    var shouldResetLoading = true;
     try {
       final response = await http
           .post(
@@ -57,26 +58,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
+        shouldResetLoading = false;
         setState(() {
+          _isLoading = false;
           _successMessage = 'Registration successful!';
         });
-        // Show success alert
-        if (mounted) {
-          await _showSuccessAlert(context);
-        }
+        await _showSuccessAlert(context);
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+        return;
       } else {
         final errorData = jsonDecode(response.body);
+        if (!mounted) return;
         setState(() {
           _errorMessage = errorData['message'] ?? 'Registration failed';
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Connection error. Please try again.';
         print("error test checking: $e");
       });
     } finally {
-      if (mounted) {
+      if (shouldResetLoading && mounted) {
         setState(() => _isLoading = false);
       }
     }
@@ -86,7 +92,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -125,10 +131,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(
-                        context,
-                      ).pushReplacementNamed(AppRoutes.login);
+                      Navigator.of(dialogContext).pop();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryBlue,
@@ -304,22 +307,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           TextFormField(
                             controller: _passwordController,
                             obscureText: !_showPassword,
-                            decoration: _inputDecoration(
-                              '••••••••',
-                              icon: Icons.lock_outline,
-                            ).copyWith(
-                              suffixIcon: IconButton(
-                                onPressed: () {
-                                  setState(() => _showPassword = !_showPassword);
-                                },
-                                icon: Icon(
-                                  _showPassword
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  color: Colors.grey.shade600,
+                            decoration:
+                                _inputDecoration(
+                                  '••••••••',
+                                  icon: Icons.lock_outline,
+                                ).copyWith(
+                                  suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(
+                                        () => _showPassword = !_showPassword,
+                                      );
+                                    },
+                                    icon: Icon(
+                                      _showPassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
                             validator: (value) {
                               if (value == null || value.length < 6) {
                                 return 'Minimum 6 characters';
@@ -377,8 +383,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context)
-                              .pushReplacementNamed(AppRoutes.login);
+                          Navigator.of(
+                            context,
+                          ).pushReplacementNamed(AppRoutes.login);
                         },
                         child: Text(
                           'Sign In',

@@ -1,16 +1,19 @@
 PODS:
+  - file_selector_macos (0.0.1):
+    - FlutterMacOS
   - Firebase/CoreOnly (12.14.0):
     - FirebaseCore (~> 12.14.0)
   - Firebase/Messaging (12.14.0):
     - Firebase/CoreOnly
     - FirebaseMessaging (~> 12.14.0)
   - firebase_core (4.10.0):
-    - Firebase/CoreOnly (= 12.14.0)
-    - Flutter
+    - Firebase/CoreOnly (~> 12.14.0)
+    - FlutterMacOS
   - firebase_messaging (16.3.0):
-    - Firebase/Messaging (= 12.14.0)
+    - Firebase/CoreOnly (~> 12.14.0)
+    - Firebase/Messaging (~> 12.14.0)
     - firebase_core
-    - Flutter
+    - FlutterMacOS
   - FirebaseCore (12.14.0):
     - FirebaseCoreInternal (~> 12.14.0)
     - GoogleUtilities/Environment (~> 8.1)
@@ -31,9 +34,9 @@ PODS:
     - GoogleUtilities/Reachability (~> 8.1)
     - GoogleUtilities/UserDefaults (~> 8.1)
     - nanopb (~> 3.30910.0)
-  - Flutter (1.0.0)
   - flutter_local_notifications (0.0.1):
-    - Flutter
+    - FlutterMacOS
+  - FlutterMacOS (1.0.0)
   - geolocator_apple (1.2.0):
     - Flutter
     - FlutterMacOS
@@ -64,28 +67,26 @@ PODS:
   - GoogleUtilities/UserDefaults (8.1.0):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - image_picker_ios (0.0.1):
-    - Flutter
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
   - printing (1.0.0):
-    - Flutter
+    - FlutterMacOS
   - PromisesObjC (2.4.0)
-  - url_launcher_ios (0.0.1):
-    - Flutter
+  - url_launcher_macos (0.0.1):
+    - FlutterMacOS
 
 DEPENDENCIES:
-  - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
-  - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
-  - Flutter (from `Flutter`)
-  - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
-  - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
-  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
-  - printing (from `.symlinks/plugins/printing/ios`)
-  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
+  - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
+  - firebase_core (from `Flutter/ephemeral/.symlinks/plugins/firebase_core/macos`)
+  - firebase_messaging (from `Flutter/ephemeral/.symlinks/plugins/firebase_messaging/macos`)
+  - flutter_local_notifications (from `Flutter/ephemeral/.symlinks/plugins/flutter_local_notifications/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - geolocator_apple (from `Flutter/ephemeral/.symlinks/plugins/geolocator_apple/darwin`)
+  - printing (from `Flutter/ephemeral/.symlinks/plugins/printing/macos`)
+  - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
 
 SPEC REPOS:
   trunk:
@@ -100,42 +101,42 @@ SPEC REPOS:
     - PromisesObjC
 
 EXTERNAL SOURCES:
+  file_selector_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos
   firebase_core:
-    :path: ".symlinks/plugins/firebase_core/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/firebase_core/macos
   firebase_messaging:
-    :path: ".symlinks/plugins/firebase_messaging/ios"
-  Flutter:
-    :path: Flutter
+    :path: Flutter/ephemeral/.symlinks/plugins/firebase_messaging/macos
   flutter_local_notifications:
-    :path: ".symlinks/plugins/flutter_local_notifications/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_local_notifications/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
   geolocator_apple:
-    :path: ".symlinks/plugins/geolocator_apple/darwin"
-  image_picker_ios:
-    :path: ".symlinks/plugins/image_picker_ios/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/geolocator_apple/darwin
   printing:
-    :path: ".symlinks/plugins/printing/ios"
-  url_launcher_ios:
-    :path: ".symlinks/plugins/url_launcher_ios/ios"
+    :path: Flutter/ephemeral/.symlinks/plugins/printing/macos
+  url_launcher_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
 
 SPEC CHECKSUMS:
+  file_selector_macos: 9e9e068e90ebee155097d00e89ae91edb2374db7
   Firebase: 7cc10425300768ec86292688af5cb228f0604bde
-  firebase_core: 383e19b49a08df5d7a6cf5017616de6a357ed7af
-  firebase_messaging: ab03d6090864c0fb8136521231df6a66cb13be49
+  firebase_core: 6c25555337efe4f9288389c14373ddd107790d90
+  firebase_messaging: 42a62d26647e5068cb1fbb083a01e59c702b983f
   FirebaseCore: 4939b340b9c598dc1f965d68f8fe57e630b65407
   FirebaseCoreInternal: 090369a5fffd7423cf88006ab4d2ccc2173a8db9
   FirebaseInstallations: 7cdc919e29dc54306edeffdbdc1eed1a40d7d1e7
   FirebaseMessaging: 4803888ce3002188f24e19faa8d2326261538426
-  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_local_notifications: 643a3eda1ce1c0599413ca31672536d423dee214
+  flutter_local_notifications: 1fc7ffb10a83d6a2eeeeddb152d43f1944b0aad0
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   geolocator_apple: ab36aa0e8b7d7a2d7639b3b4e48308394e8cef5e
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
-  image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  printing: 54ff03f28fe9ba3aa93358afb80a8595a071dd07
+  printing: c4cf83c78fd684f9bc318e6aadc18972aa48f617
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
+  url_launcher_macos: f87a979182d112f911de6820aefddaf56ee9fbfd
 
-PODFILE CHECKSUM: f79e1872da79a29354b04cf03619f8f3d69fe58e
+PODFILE CHECKSUM: 54d867c82ac51cbd61b565781b9fada492027009
 
 COCOAPODS: 1.16.2
